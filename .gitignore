@@ -3,8 +3,9 @@
 __pycache__/
 *.pyc
 
-# Dados de alunos e logs nunca entram no repositório
-*.db
+# O banco de alunos (banco_alunos.db) entra no repositório de propósito: é como o dado chega ao Streamlit. Só os arquivos temporários do SQLite ficam de fora.
+*.db-wal
+*.db-shm
 *.log
 banco_alunos.json*
 
