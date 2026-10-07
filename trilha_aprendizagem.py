@@ -7,6 +7,8 @@ import hashlib
 import uuid
 import html
 import functools
+import re
+import unicodedata
 import base64
 import sqlite3
 from datetime import date, datetime, timedelta, timezone
@@ -1072,8 +1074,9 @@ def habilidades_bncc_do_conteudo(cid, c):
     return sorted(codigos)
 
 
-def desempenho_por_bncc(alunos):
-    """Agrega o progresso da turma por habilidade da BNCC.
+def desempenho_por_bncc(alunos, conteudo_id=None):
+    """Agrega o progresso da turma por habilidade da BNCC (só de um conteúdo,
+    se conteudo_id for dado: é o caso do PDF exportado de uma aba).
 
     Retorna [{Habilidade, Missões, Conclusões, Possíveis, % Concluído}], onde
     'Conclusões' conta cada par (aluno, missão concluída) das missões marcadas
@@ -1086,6 +1089,8 @@ def desempenho_por_bncc(alunos):
     'acertou de primeira'."""
     acumulado = {}
     for cid in st.session_state.conteudos:
+        if conteudo_id and cid != conteudo_id:
+            continue
         total_missoes = obter_total_missoes(cid)
         for idx in range(1, total_missoes + 1):
             habilidade = obter_bncc_missao(cid, idx)
@@ -1134,8 +1139,9 @@ def registrar_tentativa_missao(aluno, conteudo_id, missao, acertou):
         pass
 
 
-def acerto_por_aluno_e_habilidade():
-    """Acerto de cada aluno em cada habilidade da BNCC, a partir das tentativas.
+def acerto_por_aluno_e_habilidade(conteudo_id=None):
+    """Acerto de cada aluno em cada habilidade da BNCC, a partir das tentativas
+    (só as de um conteúdo, se conteudo_id for dado).
 
     Retorna (acertos, desde): acertos é {(aluno, habilidade): [acertos, tentativas]}
     e desde é o dia (AAAA-MM-DD) da primeira tentativa gravada, ou '' se não há
@@ -1154,6 +1160,8 @@ def acerto_por_aluno_e_habilidade():
     except sqlite3.Error:
         return acertos, desde
     for linha in linhas:
+        if conteudo_id and linha["conteudo_id"] != conteudo_id:
+            continue
         if not desde or linha["momento"] < desde:
             desde = linha["momento"]
         habilidade = obter_bncc_missao(linha["conteudo_id"], linha["missao"])
@@ -3435,6 +3443,12 @@ def _grafico_barras_pdf(pdf, titulo, itens, x_tabela, largura_tabela):
 
 
 @st.cache_data
+def nome_de_arquivo(texto):
+    """'Estatística Descritiva' -> 'estatistica_descritiva' (sem acento nem símbolo)."""
+    sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "_", sem_acento.lower()).strip("_") or "conteudo"
+
+
 def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_instituicao="", nome_professor="", turma="", data_relatorio="", linhas_bncc=None, acerto=None):
     """Gera o PDF com margens laterais simétricas, título centralizado e as
     duas tabelas: Desempenho da Turma + Detalhamento do conteúdo que estava em tela.
@@ -3471,6 +3485,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
         _linha_dado_pdf(pdf, "Professor(a)", nome_professor)
     if turma:
         _linha_dado_pdf(pdf, "Turma", turma)
+    _linha_dado_pdf(pdf, "Conteúdo", conteudo_titulo)  # o PDF sai de uma aba e fala só dela
     _linha_dado_pdf(pdf, "Data", data_relatorio)
     pdf.ln(3)
 
@@ -3572,7 +3587,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
         habilidades_ac, linhas_ac = acerto
         pdf.add_page()
         pdf.set_font("CMU", 'B', 13)
-        pdf.cell(largura_util, 8, text="Acerto por Aluno em cada Habilidade", align='C', new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(largura_util, 8, text="Acerto por Habilidade", align='C', new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("CMU", '', 10)
         pdf.cell(largura_util, 6, text="Entre parênteses: acertos e tentativas.", align='C', new_x="LMARGIN", new_y="NEXT")
         pdf.cell(largura_util, 6, text="Verde a partir de 70%. Amarelo de 40% a 69%. Vermelho abaixo de 40%. Traço: sem tentativa.", align='C', new_x="LMARGIN", new_y="NEXT")
@@ -3742,11 +3757,11 @@ def _fundo_acerto(percentual):
     return "background-color: #f6c9c4; color: #1f2937"
 
 
-def tabela_de_acerto(alunos):
+def tabela_de_acerto(alunos, conteudo_id=None):
     """Dados da tabela aluno × habilidade: (habilidades, linhas), com linhas =
     [(rótulo, [[acertos, tentativas] ou None por habilidade])], a da Turma
-    primeiro. Usada pela tela e pelo PDF, para os dois mostrarem o mesmo."""
-    acertos, _ = acerto_por_aluno_e_habilidade()
+    primeiro. Usada pela tela (turma toda) e pelo PDF (só o conteúdo da aba)."""
+    acertos, _ = acerto_por_aluno_e_habilidade(conteudo_id)
     if not acertos:
         return [], []
     habilidades = sorted({h for (_, h) in acertos})
@@ -3776,12 +3791,12 @@ def _texto_acerto(par):
     return "—" if pct is None else f"{pct}% ({par[0]}/{par[1]})"
 
 
-def renderizar_acerto_por_aluno_e_habilidade(alunos):
+def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None):
     """Tabela aluno × habilidade da BNCC com o % de acerto (acertos ÷ tentativas),
     mais uma linha com a turma toda. Quem não tentou nenhuma missão da
     habilidade fica com '—'."""
-    st.subheader("🎯 Acerto por Aluno em cada Habilidade")
-    habilidades, linhas = tabela_de_acerto(alunos)
+    st.subheader("🎯 Acerto por Habilidade")
+    habilidades, linhas = tabela_de_acerto(alunos, conteudo_id)
     if not habilidades:
         st.info(
             "Ainda não há respostas registradas por habilidade. Elas passam a aparecer aqui "
@@ -3803,7 +3818,7 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos):
             linhas_css.append([""] + [_fundo_acerto(p) if p is not None else "" for p in pcts])
     # Título de cada coluna com o total de missões da habilidade, pra dar a medida
     # do "(acertos/tentativas)".
-    total_missoes = {l["Habilidade"]: l["Missões"] for l in desempenho_por_bncc(alunos)}
+    total_missoes = {l["Habilidade"]: l["Missões"] for l in desempenho_por_bncc(alunos, conteudo_id)}
     titulos = [f"{h}" + chr(10) + f"({total_missoes[h]} missões)" if h in total_missoes else h for h in habilidades]
     df_txt = pd.DataFrame(linhas_txt, columns=["Aluno"] + titulos)
     df_css = pd.DataFrame(linhas_css, columns=["Aluno"] + titulos)
@@ -3848,120 +3863,10 @@ def _dialog_confirmar_apagar_banco():
             st.rerun()
 
 
-def render_desempenho_turma():
-    st.markdown("As informações abaixo mostram, em tempo real, como cada aluno está se saindo em cada conteúdo.")
-    acessos_hoje, acessos_total = contar_acessos()
-    st.markdown(f"👥 **Acessos:** {acessos_hoje} hoje · {acessos_total} no total")
-    alunos = carregar_todos_alunos_do_banco()
-
-    if not alunos:
-        st.info("Nenhum aluno iniciou a trilha ainda.")
-        return
-
-    # Meta de XP: o professor define em Configurações; sem valor salvo
-    # ainda, cai pra metade do catálogo atual — um chute razoável de
-    # partida, que ele pode ajustar a qualquer momento.
-    _, _, xp_catalogo_total = xp_maximo_catalogo_atual()
-    meta_xp = st.session_state.config.get("meta_xp") or (xp_catalogo_total / 2)
-
-    lista_geral = []
-    for nome, perfil in alunos.items():
-        erros_totais = sum(p.get("erros", 0) for p in perfil.get("progresso", {}).values())
-        xp_total = perfil.get("xp_total", 0)
-        # Cor por FAIXA DE XP (ver cor_por_xp) — nesse gráfico o comprimento
-        # da barra já É o XP, então a cor precisa falar da mesma coisa que o
-        # comprimento, senão vira duas leituras diferentes disputando o
-        # mesmo desenho (confuso, relatado pelo Wenes, 2026-09-14). Reaproveita
-        # cor_por_percentual_concluido — a MESMA função/faixa (≥70% verde,
-        # 40-69% amarelo, <40% vermelho) que já colore os outros gráficos do
-        # painel — em vez de uma faixa própria só pra este gráfico: um
-        # critério só pro app inteiro, mais fácil de entender e de explicar.
-        pct_da_meta = min(xp_total / meta_xp * 100, 100) if meta_xp else 0
-        lista_geral.append({
-            "Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
-            "XP Total": xp_total, "Erros Totais": erros_totais,
-            "Cor": cor_por_percentual_concluido(pct_da_meta),
-        })
-
-    # ---------- Visão Geral com exclusão individual de aluno ----------
-    st.subheader("📈 Desempenho da Turma")
-    espaco_botao_excluir = st.container()  # preenchido depois da tabela, que é quem sabe as linhas marcadas
-
-    df_geral = pd.DataFrame(lista_geral)
-    colunas_visiveis = ["Aluno", "XP Total", "Erros Totais"]
-    if df_geral["Nome no Relatório"].str.strip().any():
-        colunas_visiveis.insert(1, "Nome no Relatório")
-    # Tabela em HTML (título em negrito, como as outras). A exclusão deixou de ser
-    # por caixinha na tabela e passou a ser por lista de nomes, logo acima dela.
-    tabela_centralizada(df_geral[colunas_visiveis])
-    with espaco_botao_excluir:
-        col_nomes, col_botao = st.columns([4, 1], vertical_alignment="bottom")
-        with col_nomes:
-            nomes_marcados = st.multiselect(
-                "Excluir alunos",
-                options=list(df_geral["Aluno"]),
-                placeholder="Escolha os alunos a excluir",
-                key=f"excluir_alunos_{st.session_state.get('versao_tabela_alunos', 0)}",
-            )
-        with col_botao:
-            rotulo = "🗑️ Excluir" + (f" ({len(nomes_marcados)})" if nomes_marcados else "")
-            if st.button(rotulo, key="btn_excluir_selecionados", disabled=not nomes_marcados, use_container_width=True):
-                _dialog_confirmar_exclusao_alunos(nomes_marcados)
-
-    # Editor num expander separado, e NÃO um st.data_editor no lugar da tabela
-    # acima: aquela tabela usa on_select pra escolher o aluno a excluir, e
-    # st.data_editor não tem seleção de linha — trocar uma pela outra mataria
-    # o botão de excluir aluno individual.
-    with st.expander("✏️ Nomes para o relatório (opcional)"):
-        st.caption(
-            "O aluno entra com um apelido inventado (Goku99, Player1, Shadow...), mas o relatório impresso "
-            "costuma precisar do nome real. Preencha aqui e o PDF sai com o nome de verdade — "
-            "**o login do aluno não muda**, então ninguém perde XP. "
-            "Deixe em branco quem você prefere completar à mão depois de imprimir."
-        )
-        df_nomes = st.data_editor(
-            df_geral[["Aluno", "Nome no Relatório"]],
-            use_container_width=True,
-            hide_index=True,
-            disabled=["Aluno"],
-            column_config={
-                "Aluno": st.column_config.TextColumn("Login do aluno", help="Como o aluno entra no app. Não editável."),
-                "Nome no Relatório": st.column_config.TextColumn(
-                    "Nome no relatório", help="Nome que aparece no PDF. Em branco = fica vazio pra preencher à mão."),
-            },
-            key="editor_nomes_relatorio",
-        )
-        if st.button("💾 Salvar", key="salvar_nomes_relatorio"):
-            salvar_nomes_relatorio(dict(zip(df_nomes["Aluno"], df_nomes["Nome no Relatório"])))
-            flash("Salvo com sucesso!")
-            st.rerun()
-
-    # Cor por faixa de % de missões concluídas (verde/amarelo/vermelho), somando
-    # todos os conteúdos — mesma lógica e mesma técnica (Altair com domain==range)
-    # do gráfico de "Detalhamento por Conteúdo", pra não reintroduzir o bug de
-    # cor trocada do st.bar_chart(..., color=coluna).
-    grafico_geral = (
-        alt.Chart(df_geral)
-        .mark_bar()
-        .encode(
-            x=alt.X("XP Total:Q"),
-            y=alt.Y("Aluno:N", sort=None),
-            color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-            # Sem isso, o Altair mostra TODOS os campos codificados no tooltip
-            # ao passar o mouse — incluindo "Cor" (o hexadecimal por trás da
-            # faixa verde/amarelo/vermelho) e "_Cor_sort_index" (campo interno
-            # que o Vega-Lite cria sozinho pra ordenar a escala de cor). Nenhum
-            # dos dois diz algo útil pro professor; a lista explícita abaixo
-            # restringe o tooltip só ao que interessa.
-            tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("XP Total:Q", title="XP Total")],
-        )
-    )
-    st.altair_chart(grafico_geral, use_container_width=True)
-
-    # ---------- Desempenho por habilidade da BNCC ----------
-    st.markdown("---")
+def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
+    """Tabela e gráfico de conclusão por habilidade da BNCC (da turma toda, ou de um conteúdo)."""
     st.subheader("🎯 Desempenho por Habilidade da BNCC")
-    linhas_bncc = desempenho_por_bncc(alunos)
+    linhas_bncc = desempenho_por_bncc(alunos, conteudo_id)
     if not linhas_bncc:
         st.info(
             "Nenhuma missão foi mapeada para uma habilidade da BNCC ainda. "
@@ -3999,27 +3904,137 @@ def render_desempenho_turma():
             use_container_width=True,
         )
 
-    # ---------- Acerto por aluno em cada habilidade ----------
-    st.markdown("---")
-    renderizar_acerto_por_aluno_e_habilidade(alunos)
 
-    # ---------- Detalhamento por conteúdo, navegado por abas ----------
-    st.markdown("---")
-    st.subheader("🔎 Detalhamento por Conteúdo")
+def render_desempenho_turma():
+    st.markdown("As informações abaixo mostram, em tempo real, como cada aluno está se saindo em cada conteúdo.")
+    acessos_hoje, acessos_total = contar_acessos()
+    st.markdown(f"👥 **Acessos:** {acessos_hoje} hoje · {acessos_total} no total")
+    alunos = carregar_todos_alunos_do_banco()
 
-    acerto_para_pdf = tabela_de_acerto(alunos)  # uma vez só, não uma por aba
+    if not alunos:
+        st.info("Nenhum aluno iniciou a trilha ainda.")
+        return
+
+    # Meta de XP: o professor define em Configurações; sem valor salvo
+    # ainda, cai pra metade do catálogo atual — um chute razoável de
+    # partida, que ele pode ajustar a qualquer momento.
+    _, _, xp_catalogo_total = xp_maximo_catalogo_atual()
+    meta_xp = st.session_state.config.get("meta_xp") or (xp_catalogo_total / 2)
+
+    lista_geral = []
+    for nome, perfil in alunos.items():
+        erros_totais = sum(p.get("erros", 0) for p in perfil.get("progresso", {}).values())
+        xp_total = perfil.get("xp_total", 0)
+        # Cor por FAIXA DE XP (ver cor_por_xp) — nesse gráfico o comprimento
+        # da barra já É o XP, então a cor precisa falar da mesma coisa que o
+        # comprimento, senão vira duas leituras diferentes disputando o
+        # mesmo desenho (confuso, relatado pelo Wenes, 2026-09-14). Reaproveita
+        # cor_por_percentual_concluido — a MESMA função/faixa (≥70% verde,
+        # 40-69% amarelo, <40% vermelho) que já colore os outros gráficos do
+        # painel — em vez de uma faixa própria só pra este gráfico: um
+        # critério só pro app inteiro, mais fácil de entender e de explicar.
+        pct_da_meta = min(xp_total / meta_xp * 100, 100) if meta_xp else 0
+        lista_geral.append({
+            "Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
+            "XP Total": xp_total, "Erros Totais": erros_totais,
+            "Cor": cor_por_percentual_concluido(pct_da_meta),
+        })
+
+    # ---------- Abas no topo: tudo abaixo segue a aba escolhida ----------
+    # "Geral" mostra a turma em todos os conteúdos (XP, exclusão de aluno, nomes do
+    # relatório); cada conteúdo mostra só os dados dele, e o PDF sai da aba dele.
+    # on_change="rerun": só a aba aberta é calculada e enviada (as outras ficam vazias).
     ids_conteudo = list(st.session_state.conteudos.keys())
-    labels_abas = [f"{st.session_state.conteudos[cid]['icone']} {st.session_state.conteudos[cid]['titulo']}" for cid in ids_conteudo]
-    # on_change="rerun": só o conteúdo da aba aberta é calculado e enviado (as outras ficam
-    # vazias). Antes, as 10 abas eram desenhadas de uma vez (tabelas, gráficos), o que
-    # deixava a troca de página lenta e com o conteúdo antigo clareado na tela.
-    abas = st.tabs(labels_abas, on_change="rerun", key="abas_detalhamento")
+    labels_abas = ["📊 Geral"] + [f"{st.session_state.conteudos[cid]['icone']} {st.session_state.conteudos[cid]['titulo']}" for cid in ids_conteudo]
+    aba_geral, *abas = st.tabs(labels_abas, on_change="rerun", key="abas_detalhamento")
+
+    with aba_geral:
+        if aba_geral.open:
+            # ---------- Visão Geral com exclusão individual de aluno ----------
+            st.subheader("📈 Desempenho da Turma")
+            espaco_botao_excluir = st.container()  # preenchido depois da tabela, que é quem sabe as linhas marcadas
+
+            df_geral = pd.DataFrame(lista_geral)
+            colunas_visiveis = ["Aluno", "XP Total", "Erros Totais"]
+            if df_geral["Nome no Relatório"].str.strip().any():
+                colunas_visiveis.insert(1, "Nome no Relatório")
+            # Tabela em HTML (título em negrito, como as outras). A exclusão deixou de ser
+            # por caixinha na tabela e passou a ser por lista de nomes, logo acima dela.
+            tabela_centralizada(df_geral[colunas_visiveis])
+            with espaco_botao_excluir:
+                col_nomes, col_botao = st.columns([4, 1], vertical_alignment="bottom")
+                with col_nomes:
+                    nomes_marcados = st.multiselect(
+                        "Excluir alunos",
+                        options=list(df_geral["Aluno"]),
+                        placeholder="Escolha os alunos a excluir",
+                        key=f"excluir_alunos_{st.session_state.get('versao_tabela_alunos', 0)}",
+                    )
+                with col_botao:
+                    rotulo = "🗑️ Excluir" + (f" ({len(nomes_marcados)})" if nomes_marcados else "")
+                    if st.button(rotulo, key="btn_excluir_selecionados", disabled=not nomes_marcados, use_container_width=True):
+                        _dialog_confirmar_exclusao_alunos(nomes_marcados)
+
+            # Editor num expander separado, e NÃO um st.data_editor no lugar da tabela
+            # acima: aquela tabela usa on_select pra escolher o aluno a excluir, e
+            # st.data_editor não tem seleção de linha — trocar uma pela outra mataria
+            # o botão de excluir aluno individual.
+            with st.expander("✏️ Nomes para o relatório (opcional)"):
+                st.caption(
+                    "O aluno entra com um apelido inventado (Goku99, Player1, Shadow...), mas o relatório impresso "
+                    "costuma precisar do nome real. Preencha aqui e o PDF sai com o nome de verdade — "
+                    "**o login do aluno não muda**, então ninguém perde XP. "
+                    "Deixe em branco quem você prefere completar à mão depois de imprimir."
+                )
+                df_nomes = st.data_editor(
+                    df_geral[["Aluno", "Nome no Relatório"]],
+                    use_container_width=True,
+                    hide_index=True,
+                    disabled=["Aluno"],
+                    column_config={
+                        "Aluno": st.column_config.TextColumn("Login do aluno", help="Como o aluno entra no app. Não editável."),
+                        "Nome no Relatório": st.column_config.TextColumn(
+                            "Nome no relatório", help="Nome que aparece no PDF. Em branco = fica vazio pra preencher à mão."),
+                    },
+                    key="editor_nomes_relatorio",
+                )
+                if st.button("💾 Salvar", key="salvar_nomes_relatorio"):
+                    salvar_nomes_relatorio(dict(zip(df_nomes["Aluno"], df_nomes["Nome no Relatório"])))
+                    flash("Salvo com sucesso!")
+                    st.rerun()
+
+            # Cor por faixa de % de missões concluídas (verde/amarelo/vermelho), somando
+            # todos os conteúdos — mesma lógica e mesma técnica (Altair com domain==range)
+            # do gráfico de "Detalhamento por Conteúdo", pra não reintroduzir o bug de
+            # cor trocada do st.bar_chart(..., color=coluna).
+            grafico_geral = (
+                alt.Chart(df_geral)
+                .mark_bar()
+                .encode(
+                    x=alt.X("XP Total:Q"),
+                    y=alt.Y("Aluno:N", sort=None),
+                    color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
+                    # Sem isso, o Altair mostra TODOS os campos codificados no tooltip
+                    # ao passar o mouse — incluindo "Cor" (o hexadecimal por trás da
+                    # faixa verde/amarelo/vermelho) e "_Cor_sort_index" (campo interno
+                    # que o Vega-Lite cria sozinho pra ordenar a escala de cor). Nenhum
+                    # dos dois diz algo útil pro professor; a lista explícita abaixo
+                    # restringe o tooltip só ao que interessa.
+                    tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("XP Total:Q", title="XP Total")],
+                )
+            )
+            st.altair_chart(grafico_geral, use_container_width=True)
+            st.markdown("---")
+            renderizar_desempenho_por_habilidade(alunos)
+            st.markdown("---")
+            renderizar_acerto_por_aluno_e_habilidade(alunos)
 
     for aba, cid in zip(abas, ids_conteudo):
         with aba:
             if not aba.open:
                 continue
             conteudo_info = st.session_state.conteudos[cid]
+            st.subheader(f"📈 Desempenho em {conteudo_info['titulo']}")
             total = obter_total_missoes(cid)
 
             linhas = []
@@ -4074,14 +4089,19 @@ def render_desempenho_turma():
                 nome_professor=st.session_state.config.get("nome_professor", ""),
                 turma=st.session_state.config.get("turma", ""),
                 data_relatorio=formatar_data_relatorio(st.session_state.config.get("cidade", "")),
-                linhas_bncc=linhas_bncc,
-                acerto=acerto_para_pdf,
+                # Habilidades e acerto só deste conteúdo: o PDF sai da aba e fala dela.
+                linhas_bncc=desempenho_por_bncc(alunos, cid),
+                acerto=tabela_de_acerto(alunos, cid),
             )
-            st.caption(f"Exporte o relatório do conteúdo selecionado.")
+            st.markdown("---")
+            renderizar_desempenho_por_habilidade(alunos, cid)
+            st.markdown("---")
+            renderizar_acerto_por_aluno_e_habilidade(alunos, cid)
+            st.markdown("---")
             st.download_button(
                 label="📄 Exportar Relatório",
                 data=gerar_este_pdf,
-                file_name=f"relatorio_{cid}.pdf",
+                file_name=f"relatorio_{nome_de_arquivo(conteudo_info['titulo'])}.pdf",
                 mime="application/pdf",
                 key=f"pdf_{cid}",
             )
