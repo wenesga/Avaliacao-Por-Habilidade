@@ -1,0 +1,13 @@
+# Ambiente virtual (recriar com: python -m venv .venv && pip install -r requirements.txt)
+.venv/
+__pycache__/
+*.pyc
+
+# Dados de alunos e logs nunca entram no repositório
+*.db
+*.log
+banco_alunos.json*
+
+# PDFs da BNCC usados pelo gerador (baixar do site do MEC)
+arquivos/*.pdf
+arquivos/*.txt
