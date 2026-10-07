@@ -25,7 +25,7 @@
         "resposta": "26",
         "tipo": "numero",
         "pontos": 10,
-        "bncc": ""
+        "descritor": ""
       },
       {
         "titulo": "Área de um terreno retangular",
@@ -33,7 +33,7 @@
         "resposta": "40",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": "EF08MA19"
+        "descritor": ""
       },
       {
         "titulo": "Área de um triângulo",
@@ -41,7 +41,7 @@
         "resposta": "30",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": "EF08MA19"
+        "descritor": ""
       },
       {
         "titulo": "Área de um quadrado",
@@ -49,7 +49,7 @@
         "resposta": "49",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": "EF08MA19"
+        "descritor": ""
       },
       {
         "titulo": "Área de um círculo",
@@ -57,45 +57,9 @@
         "resposta": "314",
         "tipo": "numero",
         "pontos": 25,
-        "bncc": "EF08MA19"
+        "descritor": ""
       }
     ]
-  },
-  "estatistica": {
-    "titulo": "Estatística Descritiva",
-    "icone": "📊",
-    "tipo": "estatico",
-    "descricao": "Medidas de tendência central e dispersão calculadas sobre um conjunto de dados."
-  },
-  "estatistica_frequencia": {
-    "titulo": "Tabela e Gráfico de Frequência",
-    "icone": "📶",
-    "tipo": "estatico",
-    "descricao": "Organize uma amostra em faixas e leia o gráfico de frequência resultante."
-  },
-  "estatistica_leitura_grafica": {
-    "titulo": "Leitura Crítica de Gráficos",
-    "icone": "🔍",
-    "tipo": "estatico",
-    "descricao": "Aprenda a desconfiar de gráfico e pesquisa da mídia: escala manipulada e amostra não representativa."
-  },
-  "estatistica_comparacao_diagramas": {
-    "titulo": "Comparando Diagramas",
-    "icone": "📦",
-    "tipo": "estatico",
-    "descricao": "Histograma, box-plot e ramos-e-folhas: três formas de olhar pra mesma amostra, cada uma boa pra uma pergunta diferente."
-  },
-  "estatistica_pesquisa_amostral": {
-    "titulo": "Planejando uma Pesquisa",
-    "icone": "📋",
-    "tipo": "estatico",
-    "descricao": "População x amostra, e como os dados de uma amostra viram um relatório de verdade: da coleta até as medidas."
-  },
-  "estatistica_tendencia": {
-    "titulo": "Relação entre Duas Variáveis",
-    "icone": "📈",
-    "tipo": "estatico",
-    "descricao": "Horas de estudo e nota: como duas variáveis se relacionam, e como uma reta ajuda a enxergar (e prever) essa relação."
   },
   "equacao_1_grau": {
     "titulo": "Equação do 1º Grau",
@@ -113,7 +77,7 @@
       },
       {
         "titulo": "Equações com os dois passos juntos",
-        "texto": "Nas equações mais completas, primeiro tire o número que está somando ou subtraindo, e só depois cuide do número que está multiplicando o x.\n\n**Exemplo resolvido:** Resolva 2x + 4 = 14.\n\n- Passo 1 (tirar o +4, fazendo a operação inversa): 2x = 14 − 4 = 10\n- Passo 2 (tirar o 2 que multiplica, dividindo): x = 10 ÷ 2 = **5**\n\nEssa é a ordem que você vai seguir em toda missão: primeiro soma/subtração, depois multiplicação/divisão."
+        "texto": "Nas equações mais completas, primeiro tire o número que está somando ou subtraindo, e só depois cuide do número que está multiplicando o x.\n\n**Exemplo resolvido:** Resolva 2x + 4 = 14.\n\n- Passo 1 (tirar o +4, fazendo a operação inversa): 2x = 14 − 4 = 10\n- Passo 2 (tirar o 2 que multiplica, dividindo): x = 10 ÷ 2 = **5**\n\nEssa é a ordem que você vai seguir em toda questão: primeiro soma/subtração, depois multiplicação/divisão."
       }
     ],
     "missoes": [
@@ -123,7 +87,7 @@
         "resposta": "12",
         "tipo": "numero",
         "pontos": 10,
-        "bncc": "EF07MA18"
+        "descritor": ""
       },
       {
         "titulo": "Isolando com divisão",
@@ -131,7 +95,7 @@
         "resposta": "9",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": "EF07MA18"
+        "descritor": ""
       },
       {
         "titulo": "Combinando os dois passos",
@@ -139,7 +103,7 @@
         "resposta": "6",
         "tipo": "numero",
         "pontos": 20,
-        "bncc": "EF07MA18"
+        "descritor": ""
       },
       {
         "titulo": "Com subtração e divisão",
@@ -147,7 +111,7 @@
         "resposta": "8",
         "tipo": "numero",
         "pontos": 25,
-        "bncc": "EF07MA18"
+        "descritor": ""
       }
     ]
   },
@@ -177,7 +141,7 @@
         "resposta": "4",
         "tipo": "numero",
         "pontos": 10,
-        "bncc": "EM13MAT507"
+        "descritor": ""
       },
       {
         "titulo": "Aplicando a fórmula do termo geral",
@@ -185,7 +149,7 @@
         "resposta": "22",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": "EM13MAT507"
+        "descritor": ""
       },
       {
         "titulo": "Termo geral com números maiores",
@@ -193,7 +157,7 @@
         "resposta": "28",
         "tipo": "numero",
         "pontos": 20,
-        "bncc": "EM13MAT507"
+        "descritor": ""
       },
       {
         "titulo": "Somando os termos",
@@ -201,7 +165,7 @@
         "resposta": "22",
         "tipo": "numero",
         "pontos": 25,
-        "bncc": "EM13MAT507"
+        "descritor": ""
       }
     ]
   },
@@ -240,7 +204,7 @@
         "resposta": "O tempo fica muito maior que o dobro, podendo levar horas ou mais",
         "tipo": "multipla",
         "pontos": 20,
-        "bncc": "EM13CO03"
+        "descritor": ""
       },
       {
         "titulo": "O que a maquina nao decide sozinha",
@@ -253,7 +217,7 @@
         "resposta": "Decidir se uma piada e engracada",
         "tipo": "multipla",
         "pontos": 20,
-        "bncc": "EM13CO05"
+        "descritor": ""
       },
       {
         "titulo": "Rapido nao e a mesma coisa que bom",
@@ -266,7 +230,7 @@
         "resposta": "Seguranca",
         "tipo": "multipla",
         "pontos": 20,
-        "bncc": "EM13CO06"
+        "descritor": ""
       },
       {
         "titulo": "Como o app sabe o que sugerir",
@@ -279,7 +243,7 @@
         "resposta": "Inteligencia Artificial",
         "tipo": "multipla",
         "pontos": 20,
-        "bncc": "EM13CO10"
+        "descritor": ""
       }
     ]
   },
@@ -309,7 +273,7 @@
         "resposta": "10",
         "tipo": "numero",
         "pontos": 10,
-        "bncc": ""
+        "descritor": ""
       },
       {
         "titulo": "Determinante D do sistema",
@@ -317,7 +281,7 @@
         "resposta": "-3",
         "tipo": "numero",
         "pontos": 10,
-        "bncc": ""
+        "descritor": ""
       },
       {
         "titulo": "Determinante Dx",
@@ -325,7 +289,7 @@
         "resposta": "-6",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": ""
+        "descritor": ""
       },
       {
         "titulo": "Valor de x pela Regra de Cramer",
@@ -333,7 +297,69 @@
         "resposta": "2",
         "tipo": "numero",
         "pontos": 15,
-        "bncc": ""
+        "descritor": ""
+      }
+    ]
+  },
+  "oitavo_ano_matematica_exemplo": {
+    "titulo": "8º Ano — Matemática (exemplo)",
+    "icone": "🧮",
+    "descricao": "Exemplo para o piloto: cada questão está ligada a um descritor do SAETO.",
+    "tipo": "dinamico",
+    "teoria": [
+      {
+        "titulo": "Como usar este exemplo",
+        "texto": "Este conteúdo é só um **exemplo** para testar o sistema. Cada questão está ligada a um descritor do SAETO (como `D044_M`), e o Painel do Professor mostra o acerto de cada aluno em cada descritor.\n\nResponda as questões, erre algumas de propósito e depois veja a tabela **Acerto por Habilidade** na Visão Geral."
+      }
+    ],
+    "missoes": [
+      {
+        "titulo": "Porcentagem",
+        "pergunta": "Quanto é 25% de 80?",
+        "resposta": "20",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D044_M"
+      },
+      {
+        "titulo": "Equação do 1º grau",
+        "pergunta": "Resolva a equação 3x + 5 = 20. Qual é o valor de x?",
+        "resposta": "5",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D048_M"
+      },
+      {
+        "titulo": "Área do retângulo",
+        "pergunta": "Um retângulo tem 8 m de comprimento e 5 m de largura. Qual é a área, em m²?",
+        "resposta": "40",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D025_M"
+      },
+      {
+        "titulo": "Conversão de medidas",
+        "pergunta": "Quantos metros há em 3,5 km?",
+        "resposta": "3500",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D030_M"
+      },
+      {
+        "titulo": "Proporcionalidade",
+        "pergunta": "Se 3 cadernos custam R$ 12, quanto custam 5 cadernos, em reais?",
+        "resposta": "20",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D035_M"
+      },
+      {
+        "titulo": "Números inteiros",
+        "pergunta": "Calcule: (−7) + 12 − 8",
+        "resposta": "-3",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D049_M"
       }
     ]
   }
