@@ -94,7 +94,7 @@ def render_menu_lateral():
     # cresça ou encolha. ---
     concluidas_por_conteudo = progresso_resumo_aluno()
 
-    st.markdown('<div class="sidebar-secao">Conteúdos</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-secao">Disciplinas</div>', unsafe_allow_html=True)
 
     for cid, conteudo_info in st.session_state.conteudos.items():
         rotulo = f"{conteudo_info['icone']}  {conteudo_info['titulo']}"
