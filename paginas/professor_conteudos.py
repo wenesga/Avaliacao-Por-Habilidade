@@ -10,7 +10,7 @@ from sessao import flash
 
 @st.dialog("🗑️ Excluir conteúdo")
 def _dialog_confirmar_exclusao_conteudo(cid, c):
-    st.warning(f"⚠️ Tem certeza que deseja excluir **{c['icone']} {c['titulo']}**? A teoria e as questões cadastradas serão perdidas permanentemente.")
+    st.warning(f"⚠️ Tem certeza que deseja excluir **{c['icone']} {c['titulo']}**? As orientações e as questões cadastradas serão perdidas permanentemente.")
     col_conf, col_canc = st.columns(2)
     with col_conf:
         if st.button("✅ Sim, excluir", key=f"confirmar_del_{cid}", type="primary", use_container_width=True):
@@ -119,7 +119,7 @@ def render_gerenciar_conteudos():
     if editando:
         conteudo_original = st.session_state.conteudos.get(editando, {})
         st.subheader(f"✏️ Editando: {conteudo_original.get('icone', '')} {conteudo_original.get('titulo', '')}")
-        st.caption("Altere o que quiser abaixo — título, teoria, questões — e clique em Salvar. "
+        st.caption("Altere o que quiser abaixo — título, orientações, questões — e clique em Salvar. "
                    "Os campos já vieram preenchidos com o que existe hoje.")
         # Ao clicar em "Editar" na lista lá em cima, o formulário reaparece
         # aqui embaixo sem nenhum aviso — quem clicou fica sem saber que
@@ -146,7 +146,7 @@ def render_gerenciar_conteudos():
     with col_desc:
         nova_descricao = st.text_input("Descrição curta:", key="nova_descricao_conteudo")
 
-    st.markdown("#### Teoria")
+    st.markdown("#### Orientações")
     st.caption("Adicione quantas seções quiser.")
     with st.expander("❔ Como formatar o texto"):
         st.markdown(
@@ -177,7 +177,7 @@ def render_gerenciar_conteudos():
     with st.form("form_add_secao", clear_on_submit=True):
         titulo_secao = st.text_input("Título da seção")
         texto_secao = st.text_area("Conteúdo da seção (aceita markdown)")
-        if st.form_submit_button("➕ Adicionar Seção de Teoria"):
+        if st.form_submit_button("➕ Adicionar Seção de Orientações"):
             if titulo_secao and texto_secao:
                 st.session_state.novas_secoes_teoria.append({"titulo": titulo_secao, "texto": texto_secao})
                 st.rerun()
@@ -328,7 +328,7 @@ def render_gerenciar_conteudos():
             if not novo_titulo:
                 st.error("Dê um título ao conteúdo antes de salvar.")
             elif not st.session_state.novas_secoes_teoria and not st.session_state.novas_missoes:
-                st.error("Adicione ao menos uma seção de teoria ou uma questão antes de salvar.")
+                st.error("Adicione ao menos uma seção de orientações ou uma questão antes de salvar.")
             else:
                 alvo_id = editando if editando else f"conteudo_{uuid.uuid4().hex[:8]}"
                 st.session_state.conteudos[alvo_id] = {

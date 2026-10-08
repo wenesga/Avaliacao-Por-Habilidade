@@ -72,7 +72,7 @@ PAGINA_MATERIA = "materia"
 PAGINA_PROFESSOR = "professor"
 
 
-ABA_TEORIA = "📖 Teoria"
+ABA_TEORIA = "📖 Orientações"
 
 
 ABA_MISSOES = "🎮 Questões"

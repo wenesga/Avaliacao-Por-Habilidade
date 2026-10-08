@@ -1,4 +1,4 @@
-"""Página de uma matéria (teoria e questões)."""
+"""Página de uma disciplina (orientações e questões)."""
 
 import streamlit as st
 from banco import perfil_atual, progresso_atual
@@ -15,7 +15,7 @@ def render_pagina_conteudo_dinamico(conteudo):
 
     secoes = conteudo.get("teoria", [])
     if not secoes:
-        st.info("📭 Este conteúdo ainda não possui teoria cadastrada. Peça ao professor para adicioná-la no Painel do Professor.")
+        st.info("📭 Esta disciplina ainda não possui orientações cadastradas. Peça ao professor para adicioná-las no Painel do Professor.")
         return
 
     # st.expander de verdade (o mesmo componente do conteúdo estático, não uma
