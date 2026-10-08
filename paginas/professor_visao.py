@@ -345,6 +345,38 @@ def render_desempenho_turma():
             de, ate, sufixo, filtrado = _filtros_acerto()
             renderizar_acerto_por_aluno_e_habilidade(alunos, None, de, ate, sufixo, filtrado)
 
+            # Relatório em PDF da turma toda (todos os conteúdos somados), com os mesmos
+            # filtros da tabela acima. Os relatórios de cada conteúdo ficam nas outras abas.
+            linhas_geral = []
+            for nome, perfil in alunos.items():
+                feitas = total_cid = erros = 0
+                for cid_g in st.session_state.conteudos:
+                    total_g = obter_total_missoes(cid_g)
+                    prog_g = perfil.get("progresso", {}).get(cid_g, {"missao_atual": 1, "erros": 0})
+                    feitas += min(max(prog_g["missao_atual"] - 1, 0), total_g)
+                    total_cid += total_g
+                    erros += prog_g.get("erros", 0)
+                linhas_geral.append({"Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
+                                     "Questões Concluídas": feitas, "Total de Questões": total_cid, "Erros": erros})
+            gerar_pdf_geral = functools.partial(
+                gerar_pdf_relatorio,
+                lista_geral, "Visão geral (todos os conteúdos)", linhas_geral,
+                nome_instituicao=st.session_state.config.get("nome_instituicao", ""),
+                nome_professor=st.session_state.config.get("nome_professor", ""),
+                turma=st.session_state.config.get("turma", ""),
+                data_relatorio=formatar_data_relatorio(st.session_state.config.get("cidade", "")),
+                linhas_descritor=desempenho_por_descritor(alunos),
+                acerto=tabela_de_acerto(alunos, None, de, ate, sufixo),
+            )
+            st.markdown("---")
+            st.download_button(
+                label="📄 Exportar Relatório",
+                data=gerar_pdf_geral,
+                file_name="relatorio_geral.pdf",
+                mime="application/pdf",
+                key="pdf_geral",
+            )
+
     for aba, cid in zip(abas, ids_conteudo):
         with aba:
             if not aba.open:
