@@ -49,7 +49,7 @@ def render_configuracoes():
     xp_catalogo_hoje = xp_maximo_catalogo_atual()
     st.markdown(
         f'<div class="resumo-xp-card resumo-xp-total">'
-        f'<div class="rotulo">Total do catálogo</div>'
+        f'<div class="rotulo">Total das disciplinas</div>'
         f'<div class="valor">{xp_catalogo_hoje} XP</div></div>',
         unsafe_allow_html=True,
     )
@@ -59,7 +59,7 @@ def render_configuracoes():
     # dia e vê o XP dela. Fora do form de propósito — precisa rerodar assim
     # que troca a escolha, pra atualizar o campo de meta antes de clicar
     # Salvar; widget de form só atualiza no submit, o que travaria isso.
-    opcoes_conteudo = {"__catalogo__": "— Catálogo inteiro (todos os conteúdos) —"}
+    opcoes_conteudo = {"__catalogo__": "— Todas as disciplinas —"}
     opcoes_conteudo.update({cid: c["titulo"] for cid, c in st.session_state.conteudos.items()})
     opcoes_ids = list(opcoes_conteudo.keys())
 
@@ -89,14 +89,16 @@ def render_configuracoes():
         "Foco de hoje (opcional)",
         options=opcoes_ids,
         format_func=lambda cid: opcoes_conteudo[cid],
-        help="Escolha o conteúdo que a turma vai estudar hoje pra já preencher o campo de meta com o XP dele.",
+        help="Escolha a disciplina que a turma vai estudar hoje pra já preencher o campo de meta com o XP dela.",
         key="meta_xp_foco_selecionado",
     )
     if conteudo_foco != st.session_state.config.get("ultimo_foco_meta_xp"):
         st.session_state.config["ultimo_foco_meta_xp"] = conteudo_foco
         salvar_config(st.session_state.config)
     if conteudo_foco == "__catalogo__":
-        valor_padrao_meta = int(st.session_state.config.get("meta_xp") or (xp_catalogo_hoje / 2))
+        # Todas as disciplinas: a meta já vem com a SOMA delas (Matemática + Português).
+        st.caption(f"💡 Todas as disciplinas somam **{xp_catalogo_hoje} XP**, já preenchido abaixo. Reduza se quiser uma meta mais fácil.")
+        valor_padrao_meta = xp_catalogo_hoje
     else:
         xp_referencia = xp_maximo_de_conteudo(conteudo_foco, st.session_state.conteudos[conteudo_foco])
         st.caption(f"💡 \"{opcoes_conteudo[conteudo_foco]}\" vale até **{xp_referencia} XP** — já preenchido abaixo. Reduza se quiser uma meta mais fácil.")
