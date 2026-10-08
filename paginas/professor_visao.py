@@ -161,8 +161,7 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
         )
     else:
         st.caption(
-            "Questões agrupadas pela habilidade. "
-            "Concluído: questões feitas por todos os alunos, do total possível (questões × alunos)."
+            "Questões agrupadas pela habilidade. Quanto cada habilidade já foi concluída pela turma."
         )
         df_descritor = pd.DataFrame(linhas_descritor)
         # Duas colunas (Conclusões, Possíveis) juntas numa só ("12/20"), do mesmo jeito
@@ -170,10 +169,10 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
         # sentido a "Possíveis" (ver conversa de 2026-09-05: até o próprio autor do app
         # leu a tabela e não conseguiu adivinhar o que "Possíveis 20" queria dizer).
         df_descritor_exibicao = df_descritor.copy()
-        df_descritor_exibicao["Concluído"] = (
+        df_descritor_exibicao["Concluído (alunos × questões)"] = (
             df_descritor_exibicao["Conclusões"].astype(str) + "/" + df_descritor_exibicao["Possíveis"].astype(str)
         )
-        df_descritor_exibicao = df_descritor_exibicao[["Habilidade", "Questões", "Concluído", "% Concluído"]]
+        df_descritor_exibicao = df_descritor_exibicao[["Habilidade", "Questões", "Concluído (alunos × questões)", "% Concluído"]]
         tabela_centralizada(df_descritor_exibicao)
         df_descritor_grafico = df_descritor.copy()
         df_descritor_grafico["Cor"] = df_descritor_grafico["% Concluído"].apply(cor_por_percentual_concluido)
