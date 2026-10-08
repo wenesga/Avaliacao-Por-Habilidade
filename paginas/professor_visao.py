@@ -22,7 +22,7 @@ def _titulo_html(titulo):
         return html.escape(primeira)
     return (
         f'{html.escape(primeira)}<br>'
-        f'<span style="font-weight: normal; font-size: 0.85em; opacity: 0.6;">{html.escape(resto)}</span>'
+        f'<span style="font-weight: normal; font-size: 0.85em; opacity: 0.6; white-space: nowrap;">{html.escape(resto)}</span>'
     )
 
 
@@ -105,7 +105,11 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None, de="", at
     # Título de cada coluna com o total de questões da habilidade, pra dar a medida
     # do "(acertos/tentativas)".
     total_missoes = {l["Habilidade"]: l["Questões"] for l in desempenho_por_descritor(alunos, conteudo_id)}
-    titulos = [f"{h}" + chr(10) + f"({total_missoes[h]} {'questão' if total_missoes[h] == 1 else 'questões'})" if h in total_missoes else h for h in habilidades]
+    # "(N questões)" só aparece quando o descritor tem mais de uma questão: com uma só, é ruído.
+    titulos = [
+        f"{h}" + chr(10) + f"({total_missoes[h]} questões)" if total_missoes.get(h, 1) > 1 else h
+        for h in habilidades
+    ]
     df_txt = pd.DataFrame(linhas_txt, columns=["Aluno"] + titulos)
     df_css = pd.DataFrame(linhas_css, columns=["Aluno"] + titulos)
     tabela_centralizada(df_txt, df_css)
