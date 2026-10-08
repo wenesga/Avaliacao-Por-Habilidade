@@ -3,6 +3,7 @@
 import altair as alt
 import functools
 import html
+import re
 import pandas as pd
 import streamlit as st
 from datetime import date, timedelta
@@ -26,12 +27,25 @@ def _titulo_html(titulo):
     )
 
 
+def _conteudo_celula(valor):
+    """Texto da célula. "62% (5/8)" vira duas linhas fixas: o percentual em cima e a
+    fração (acertos/tentativas) menor embaixo, igual em todas as células."""
+    texto = str(valor)
+    m = re.fullmatch(r"(\d+%)\s*\((\d+/\d+)\)", texto)
+    if not m:
+        return html.escape(texto)
+    return (
+        f'{html.escape(m.group(1))}<br>'
+        f'<span style="font-size: 0.85em; opacity: 0.7;">({html.escape(m.group(2))})</span>'
+    )
+
+
 def tabela_centralizada(df, estilos=None):
     """Tabela em HTML com títulos em negrito e centralizados. Usada no lugar do
     st.dataframe quando a tabela não precisa de seleção de linha: o dataframe não
     deixa centralizar o título das colunas. A primeira coluna fica à esquerda;
     estilos é um DataFrame opcional, do mesmo formato, com o CSS de cada célula."""
-    borda = "border: 1px solid rgba(128, 128, 128, 0.25); padding: 8px 12px;"
+    borda = "border: 1px solid rgba(128, 128, 128, 0.25); padding: 8px 10px; white-space: nowrap;"
     colunas = list(df.columns)
     cabecalho = "".join(
         f'<th style="{borda} text-align: {"left" if i == 0 else "center"};">{_titulo_html(c)}</th>'
@@ -43,7 +57,7 @@ def tabela_centralizada(df, estilos=None):
         for i, c in enumerate(colunas):
             estilo = estilos.iloc[r, i] if estilos is not None else ""
             alinhamento = "left" if i == 0 else "center"
-            celulas += f'<td style="{borda} text-align: {alinhamento}; {estilo}">{html.escape(str(df.iloc[r, i]))}</td>'
+            celulas += f'<td style="{borda} text-align: {alinhamento}; {estilo}">{_conteudo_celula(df.iloc[r, i])}</td>'
         corpo += f"<tr>{celulas}</tr>"
     st.markdown(
         '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse;">'
