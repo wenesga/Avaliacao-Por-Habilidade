@@ -148,8 +148,8 @@ def render_pagina_inicial():
         st.markdown("""
         <div class="home-step-card">
             <div class="home-step-numero">Passo 2</div>
-            <div class="home-step-titulo">📖 Estude a teoria</div>
-            <div class="home-step-texto">Veja as explicações passo a passo antes de partir para os desafios.</div>
+            <div class="home-step-titulo">📖 Leia as orientações</div>
+            <div class="home-step-texto">Veja as orientações antes de responder as questões.</div>
         </div>
         """, unsafe_allow_html=True)
     with c3:
