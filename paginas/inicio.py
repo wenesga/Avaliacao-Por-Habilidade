@@ -162,7 +162,7 @@ def render_pagina_inicial():
         """, unsafe_allow_html=True)
 
     st.write("")
-    st.markdown("### 📚 Conteúdos disponíveis")
+    st.markdown("### 📚 Disciplinas")
     st.caption("Clique para ir direto ao conteúdo.")
 
     cartoes = [
