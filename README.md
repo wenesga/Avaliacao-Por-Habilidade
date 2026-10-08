@@ -2,7 +2,7 @@
 
 > *Saber **em qual habilidade** cada aluno precisa de ajuda, e não só a nota da turma.*
 
-Sistema web para o professor acompanhar o **acerto de cada aluno em cada descritor do SAETO** (Matemática e Português). Os alunos respondem às questões pelo celular, tablet ou computador, e o painel do professor mostra, em tempo real, quem está bem e quem precisa de reforço.
+Sistema web para o professor acompanhar o acerto de cada aluno em cada descritor do SAETO (Matemática e Português). Os alunos respondem às questões pelo celular, tablet ou computador, e o painel do professor mostra, em tempo real, quem está bem e quem precisa de reforço.
 
 📌 *Protótipo de proposta de intervenção do Estágio Supervisionado IV (Gestão Escolar), Licenciatura em Computação, UFT/UAB.*
 
