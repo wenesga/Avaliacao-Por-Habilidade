@@ -59,7 +59,7 @@ def render_configuracoes():
     # dia e vê o XP dela. Fora do form de propósito — precisa rerodar assim
     # que troca a escolha, pra atualizar o campo de meta antes de clicar
     # Salvar; widget de form só atualiza no submit, o que travaria isso.
-    opcoes_conteudo = {"__catalogo__": "— Todas as disciplinas —"}
+    opcoes_conteudo = {"__catalogo__": "Todas"}
     opcoes_conteudo.update({cid: c["titulo"] for cid, c in st.session_state.conteudos.items()})
     opcoes_ids = list(opcoes_conteudo.keys())
 
@@ -86,7 +86,7 @@ def render_configuracoes():
     if st.session_state["meta_xp_foco_selecionado"] not in opcoes_ids:
         st.session_state["meta_xp_foco_selecionado"] = "__catalogo__"
     conteudo_foco = st.selectbox(
-        "Foco de hoje (opcional)",
+        "Foco de hoje",
         options=opcoes_ids,
         format_func=lambda cid: opcoes_conteudo[cid],
         help="Escolha a disciplina que a turma vai estudar hoje pra já preencher o campo de meta com o XP dela.",
@@ -112,7 +112,7 @@ def render_configuracoes():
     # se ele quiser uma meta menor do que o total).
     with st.form("form_meta_xp"):
         meta_xp_input = st.number_input(
-            "Meta de XP (referência pra colorir o gráfico)",
+            "Meta de XP",
             min_value=1, step=10,
             value=int(valor_padrao_meta),
             key=f"meta_xp_input_{conteudo_foco}",
