@@ -379,23 +379,32 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
     `de` e `ate` (AAAA-MM-DD, inclusive; vazio = sem limite) e só dos descritores que
     terminam em `sufixo` ("_M" Matemática, "_P" Português; vazio = todos).
 
-    Retorna (acertos, desde): acertos é {(aluno, habilidade): [acertos, tentativas]}
+    Retorna (acertos, desde): acertos é {(aluno, habilidade): [acertos, questões]}
     e desde é o dia (AAAA-MM-DD) da primeira tentativa gravada, ou '' se não há
-    nenhuma. Acerto = respostas certas ÷ todas as tentativas (cada erro conta como
-    uma tentativa), só das questões que têm habilidade mapeada."""
+    nenhuma. Só a PRIMEIRA tentativa de cada questão conta: acertou de primeira =
+    1 acerto; errou, mesmo que depois tenha acertado, = 0. O segundo número é
+    quantas questões do descritor o aluno já respondeu. As tentativas seguintes
+    são treino e não entram aqui. Só as questões que têm descritor mapeado."""
     acertos = {}
     desde = ""
     try:
         conn = obter_conexao_db()
         try:
             linhas = conn.execute(
-                "SELECT aluno, conteudo_id, missao, acertou, momento FROM tentativas_missao"
+                "SELECT aluno, conteudo_id, missao, acertou, momento FROM tentativas_missao ORDER BY id"
             ).fetchall()
         finally:
             conn.close()
     except sqlite3.Error:
         return acertos, desde
+    primeiras = set()
     for linha in linhas:
+        # A primeira tentativa é decidida antes dos filtros: se o filtro de período
+        # cortasse a primeira, as seguintes não podem passar por primeira.
+        chave = (linha["aluno"], linha["conteudo_id"], linha["missao"])
+        if chave in primeiras:
+            continue
+        primeiras.add(chave)
         if conteudo_id and linha["conteudo_id"] != conteudo_id:
             continue
         if (de and linha["momento"][:10] < de) or (ate and linha["momento"][:10] > ate):

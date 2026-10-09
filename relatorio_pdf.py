@@ -314,7 +314,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
         pdf.set_font("CMU", 'B', 13)
         pdf.cell(largura_util, 8, text="Acerto por Habilidade", align='C', new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("CMU", '', 10)
-        pdf.cell(largura_util, 6, text="Entre parênteses: acertos e tentativas.", align='C', new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(largura_util, 6, text="Entre parênteses: questões acertadas de primeira e questões respondidas.", align='C', new_x="LMARGIN", new_y="NEXT")
         pdf.cell(largura_util, 6, text="Faixas: até 40% Baixo. 41-60% Médio baixo. 61-79% Médio alto. 80% ou mais Alto. Traço: sem tentativa.", align='C', new_x="LMARGIN", new_y="NEXT")
         pdf.ln(2)
         por_tabela, larg_nome, larg_hab = 5, 30, 28

@@ -58,6 +58,54 @@
         "tipo": "numero",
         "pontos": 10,
         "descritor": "D049_M"
+      },
+      {
+        "titulo": "Desconto",
+        "pergunta": "Uma camiseta custa R$ 80,00 e está com 10% de desconto. Quanto é o desconto, em reais?",
+        "resposta": "8",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D044_M"
+      },
+      {
+        "titulo": "Equação do 1º grau",
+        "pergunta": "Resolva a equação 2x − 6 = 10. Qual é o valor de x?",
+        "resposta": "8",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D048_M"
+      },
+      {
+        "titulo": "Área do quadrado",
+        "pergunta": "Um quadrado tem lado de 6 m. Qual é a área dele, em m²?",
+        "resposta": "36",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D025_M"
+      },
+      {
+        "titulo": "Conversão de medidas",
+        "pergunta": "Quantos centímetros há em 2,5 m?",
+        "resposta": "250",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D030_M"
+      },
+      {
+        "titulo": "Proporcionalidade",
+        "pergunta": "Uma receita usa 2 copos de leite para fazer 10 pães. Quantos copos de leite são necessários para fazer 25 pães?",
+        "resposta": "5",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D035_M"
+      },
+      {
+        "titulo": "Números inteiros",
+        "pergunta": "Calcule: (−3) − (−8) + 2",
+        "resposta": "7",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D049_M"
       }
     ]
   },
@@ -141,6 +189,76 @@
           "o paciente está com pressa.",
           "o paciente já esqueceu a pergunta do médico.",
           "o médico esqueceu o remédio."
+        ]
+      },
+      {
+        "titulo": "Localizar informação",
+        "pergunta": "Leia o texto.\n\n*O campeonato de futebol da escola começa no dia 12 de outubro, na quadra coberta. Cada turma deve inscrever o seu time até o dia 5 de outubro.*\n\nAté que dia as turmas devem inscrever os seus times?",
+        "resposta": "Até o dia 5 de outubro",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D021_P",
+        "alternativas": [
+          "Até o dia 1º de outubro",
+          "Até o dia 5 de outubro",
+          "Até o dia 12 de outubro",
+          "Até o fim do campeonato"
+        ]
+      },
+      {
+        "titulo": "Sentido da palavra",
+        "pergunta": "Leia o texto.\n\n*O cantor ficou exausto depois do show: precisou se sentar e beber muita água.*\n\nNo texto, a palavra \"exausto\" significa:",
+        "resposta": "muito cansado",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D022_P",
+        "alternativas": [
+          "muito animado",
+          "muito cansado",
+          "com fome",
+          "com medo"
+        ]
+      },
+      {
+        "titulo": "Informação que não está escrita",
+        "pergunta": "Leia o texto.\n\n*Bia chegou em casa, largou a mochila e foi direto para o chuveiro. Ela suava muito e o rosto estava vermelho.*\n\nO que se pode concluir do texto?",
+        "resposta": "Fazia calor ou Bia tinha se exercitado.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D023_P",
+        "alternativas": [
+          "Bia tinha acabado de dormir.",
+          "Fazia calor ou Bia tinha se exercitado.",
+          "Bia não gosta de tomar banho.",
+          "Bia estava com frio."
+        ]
+      },
+      {
+        "titulo": "Finalidade do texto",
+        "pergunta": "Leia o texto.\n\n*Receita de bolo de cenoura: bata no liquidificador 3 cenouras, 4 ovos e 1 xícara de óleo. Misture com 2 xícaras de açúcar e 2 de farinha e leve ao forno.*\n\nEsse texto foi escrito para:",
+        "resposta": "ensinar a preparar um alimento.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D016_P",
+        "alternativas": [
+          "convencer a comprar um bolo.",
+          "contar um fato do passado.",
+          "ensinar a preparar um alimento.",
+          "dar uma notícia."
+        ]
+      },
+      {
+        "titulo": "Humor",
+        "pergunta": "Leia o texto.\n\n*— Papai, o que é um caracol?\n— É um animal que carrega a própria casa.\n— Então ele nunca paga aluguel!*\n\nO humor do texto surge porque:",
+        "resposta": "o menino conclui que o caracol não paga aluguel por carregar a própria casa.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D024_P",
+        "alternativas": [
+          "o pai não sabe o que é um caracol.",
+          "o menino tem medo de caracol.",
+          "o menino conclui que o caracol não paga aluguel por carregar a própria casa.",
+          "o caracol é um animal muito veloz."
         ]
       }
     ]
