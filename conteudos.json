@@ -106,6 +106,102 @@
         "tipo": "numero",
         "pontos": 10,
         "descritor": "D049_M"
+      },
+      {
+        "titulo": "Porcentagem de um valor",
+        "pergunta": "Uma turma tem 40 alunos e 30% deles vão de ônibus para a escola. Quantos alunos vão de ônibus?",
+        "resposta": "12",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D044_M"
+      },
+      {
+        "titulo": "Equação do 1º grau",
+        "pergunta": "Resolva a equação x + 9 = 25. Qual é o valor de x?",
+        "resposta": "16",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D048_M"
+      },
+      {
+        "titulo": "Área do retângulo",
+        "pergunta": "Uma sala retangular tem 7 m de comprimento e 4 m de largura. Qual é a área dela, em m²?",
+        "resposta": "28",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D025_M"
+      },
+      {
+        "titulo": "Quilômetros e metros",
+        "pergunta": "Quantos quilômetros há em 4500 metros?",
+        "resposta": "4.5",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D030_M"
+      },
+      {
+        "titulo": "Regra de três",
+        "pergunta": "Se 4 canetas custam R$ 10,00, quanto custam 6 canetas, em reais?",
+        "resposta": "15",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D035_M"
+      },
+      {
+        "titulo": "Números inteiros",
+        "pergunta": "Calcule: (−6) + 10 − 7",
+        "resposta": "-3",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D049_M"
+      },
+      {
+        "titulo": "Aumento percentual",
+        "pergunta": "Um produto custava R$ 200,00 e teve aumento de 15%. Quanto ele passou a custar, em reais?",
+        "resposta": "230",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D044_M"
+      },
+      {
+        "titulo": "Equação com multiplicação",
+        "pergunta": "Resolva a equação 5x = 45. Qual é o valor de x?",
+        "resposta": "9",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D048_M"
+      },
+      {
+        "titulo": "Área de um terreno",
+        "pergunta": "Um terreno retangular mede 12 m por 5 m. Qual é a área dele, em m²?",
+        "resposta": "60",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D025_M"
+      },
+      {
+        "titulo": "Litros e mililitros",
+        "pergunta": "Quantos mililitros há em 3 litros?",
+        "resposta": "3000",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D030_M"
+      },
+      {
+        "titulo": "Proporção",
+        "pergunta": "Um carro percorre 180 km em 3 horas. Mantendo a mesma velocidade, quantos quilômetros ele percorre em 5 horas?",
+        "resposta": "300",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D035_M"
+      },
+      {
+        "titulo": "Soma e subtração de inteiros",
+        "pergunta": "Calcule: 5 − (−4) − 8",
+        "resposta": "1",
+        "tipo": "numero",
+        "pontos": 10,
+        "descritor": "D049_M"
       }
     ]
   },
@@ -259,6 +355,146 @@
           "o menino tem medo de caracol.",
           "o menino conclui que o caracol não paga aluguel por carregar a própria casa.",
           "o caracol é um animal muito veloz."
+        ]
+      },
+      {
+        "titulo": "Localizar informação",
+        "pergunta": "Leia o texto.\n\n*A feira de ciências será na sexta-feira, às 14h, no pátio da escola. Os alunos devem levar o trabalho pronto e um cartaz com o título.*\n\nEm que dia será a feira de ciências?",
+        "resposta": "Na sexta-feira",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D021_P",
+        "alternativas": [
+          "Na segunda-feira",
+          "Na quarta-feira",
+          "Na sexta-feira",
+          "No sábado"
+        ]
+      },
+      {
+        "titulo": "Sentido da palavra",
+        "pergunta": "Leia o texto.\n\n*A professora elogiou o aluno porque ele foi muito gentil com os colegas e ajudou a todos.*\n\nNo texto, a palavra \"gentil\" significa:",
+        "resposta": "educado e atencioso",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D022_P",
+        "alternativas": [
+          "educado e atencioso",
+          "bravo e agressivo",
+          "triste e calado",
+          "distraído e esquecido"
+        ]
+      },
+      {
+        "titulo": "Informação que não está escrita",
+        "pergunta": "Leia o texto.\n\n*Pedro abriu a geladeira, olhou as prateleiras vazias e suspirou. Depois, pegou a carteira e saiu de casa.*\n\nO que se pode concluir do texto?",
+        "resposta": "Pedro foi comprar comida.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D023_P",
+        "alternativas": [
+          "Pedro foi comprar comida.",
+          "Pedro foi dormir.",
+          "Pedro quebrou a geladeira.",
+          "Pedro não gosta de comer."
+        ]
+      },
+      {
+        "titulo": "Finalidade do texto",
+        "pergunta": "Leia o texto.\n\n*Atenção, moradores! A água será cortada amanhã, das 8h às 12h, para a limpeza da caixa-d'água. Guardem água com antecedência.*\n\nEsse texto foi escrito para:",
+        "resposta": "avisar os moradores sobre o corte de água.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D016_P",
+        "alternativas": [
+          "vender água mineral.",
+          "contar uma história de aventura.",
+          "avisar os moradores sobre o corte de água.",
+          "ensinar a lavar a caixa-d'água."
+        ]
+      },
+      {
+        "titulo": "Humor",
+        "pergunta": "Leia o texto.\n\n*— Filho, por que você está com o caderno na geladeira?\n— A professora disse que hoje a prova é de matéria fria!*\n\nO humor do texto surge porque:",
+        "resposta": "o menino entendeu \"matéria fria\" de um jeito literal.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D024_P",
+        "alternativas": [
+          "o menino não fez a prova.",
+          "a geladeira estava quebrada.",
+          "o menino entendeu \"matéria fria\" de um jeito literal.",
+          "a professora faltou à aula."
+        ]
+      },
+      {
+        "titulo": "Localizar informação",
+        "pergunta": "Leia o texto.\n\n*O parque abre todos os dias, das 6h às 18h. A entrada é gratuita, mas os animais não podem ser alimentados pelos visitantes.*\n\nO que os visitantes não podem fazer?",
+        "resposta": "Alimentar os animais",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D021_P",
+        "alternativas": [
+          "Entrar sem pagar",
+          "Alimentar os animais",
+          "Visitar o parque aos domingos",
+          "Chegar antes das 8h"
+        ]
+      },
+      {
+        "titulo": "Sentido da palavra",
+        "pergunta": "Leia o texto.\n\n*O time venceu o jogo com muito esforço e saiu do campo sob aplausos da torcida.*\n\nNo texto, a palavra \"aplausos\" indica:",
+        "resposta": "palmas em sinal de aprovação",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D022_P",
+        "alternativas": [
+          "vaias da torcida",
+          "palmas em sinal de aprovação",
+          "barulho de chuva",
+          "silêncio total"
+        ]
+      },
+      {
+        "titulo": "Informação que não está escrita",
+        "pergunta": "Leia o texto.\n\n*Mariana colocou o despertador para as 5h, separou o uniforme e deixou a mochila pronta ao lado da porta.*\n\nO que se pode concluir do texto?",
+        "resposta": "Mariana tem compromisso cedo no dia seguinte.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D023_P",
+        "alternativas": [
+          "Mariana vai viajar de avião.",
+          "Mariana tem compromisso cedo no dia seguinte.",
+          "Mariana não vai à escola.",
+          "Mariana perdeu o despertador."
+        ]
+      },
+      {
+        "titulo": "Finalidade do texto",
+        "pergunta": "Leia o texto.\n\n*Vende-se bicicleta aro 26, em ótimo estado. Valor: R$ 350,00. Telefone: (63) 99999-0000.*\n\nEsse texto foi escrito para:",
+        "resposta": "anunciar a venda de um produto.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D016_P",
+        "alternativas": [
+          "contar um fato histórico.",
+          "anunciar a venda de um produto.",
+          "dar uma receita.",
+          "ensinar a consertar bicicleta."
+        ]
+      },
+      {
+        "titulo": "Humor",
+        "pergunta": "Leia o texto.\n\n*— Garçom, esta sopa está fria!\n— Impossível, senhor! Acabei de tirá-la do fogão.\n— Então o senhor deixou o fogão desligado!*\n\nO humor do texto surge porque:",
+        "resposta": "o cliente brinca dizendo que o fogão estava desligado.",
+        "tipo": "multipla",
+        "pontos": 10,
+        "descritor": "D024_P",
+        "alternativas": [
+          "o garçom não sabe cozinhar.",
+          "o cliente brinca dizendo que o fogão estava desligado.",
+          "a sopa estava muito quente.",
+          "o restaurante estava fechado."
         ]
       }
     ]

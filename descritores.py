@@ -104,10 +104,14 @@ def desempenho_por_descritor(alunos, conteudo_id=None):
             registro = acumulado.setdefault(habilidade, {"missoes": 0, "feitas": 0, "possiveis": 0})
             registro["missoes"] += 1
             for perfil in alunos.values():
-                prog = perfil.get("progresso", {}).get(cid, {"missao_atual": 1})
-                concluidas = max(prog.get("missao_atual", 1) - 1, 0)
+                prog = perfil.get("progresso", {}).get(cid, {})
+                respostas = prog.get("respostas")
+                if respostas is not None:
+                    feita = str(idx) in respostas
+                else:  # registro antigo, sem a lista de respostas: vale a ordem
+                    feita = idx <= max(prog.get("missao_atual", 1) - 1, 0)
                 registro["possiveis"] += 1
-                if idx <= concluidas:
+                if feita:
                     registro["feitas"] += 1
 
     linhas = []

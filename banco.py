@@ -202,12 +202,13 @@ def carregar_todos_alunos_do_banco():
                 "nome_relatorio": row["nome_relatorio"] or "",
                 "progresso": {},
             }
-        for row in conn.execute("SELECT aluno, conteudo_id, missao_atual, erros, historico FROM progresso"):
+        for row in conn.execute("SELECT aluno, conteudo_id, missao_atual, erros, historico, respostas FROM progresso"):
             if row["aluno"] in alunos:
                 alunos[row["aluno"]]["progresso"][row["conteudo_id"]] = {
                     "missao_atual": row["missao_atual"],
                     "erros": row["erros"],
                     "historico": json.loads(row["historico"]) if row["historico"] else [],
+                    "respostas": json.loads(row["respostas"]) if row["respostas"] else {},
                 }
         return alunos
     finally:
@@ -418,6 +419,23 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
         par[0] += linha["acertou"]
         par[1] += 1
     return acertos, desde
+
+
+def erros_da_questao(aluno, conteudo_id, missao):
+    """Quantas vezes o aluno errou ESTA questão até agora. Como as questões podem ser
+    respondidas em qualquer ordem, o desconto de XP por erro sai daqui, e não de um
+    contador da 'questão atual'."""
+    try:
+        conn = obter_conexao_db()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM tentativas_missao WHERE aluno = ? AND conteudo_id = ? AND missao = ? AND acertou = 0",
+                (aluno, conteudo_id, int(missao)),
+            ).fetchone()[0]
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return 0
 
 
 def ranking_turma(limite=10):
