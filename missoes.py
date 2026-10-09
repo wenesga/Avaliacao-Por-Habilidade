@@ -1,7 +1,7 @@
 """Verificação de respostas e tela de questões."""
 
 import streamlit as st
-from banco import perfil_atual, progresso_atual, registrar_tentativa_missao, salvar_perfil_e_progresso
+from banco import erros_da_questao, perfil_atual, progresso_atual, registrar_tentativa_missao, salvar_perfil_e_progresso
 from config import DESCONTO_XP_POR_ERRO, PISO_XP_FRACAO
 
 
@@ -58,10 +58,12 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
         prog = progresso_atual(conteudo_id)
 
         nome_aluno = st.session_state.aluno_ativo
+        if str(missao_id) in prog.get("respostas", {}):
+            return  # questão já concluída: não conta de novo
         registrar_tentativa_missao(nome_aluno, conteudo_id, missao_id, acertou)
 
         if acertou:
-            erros_desta_missao = prog.get("erros_missao_atual", 0)
+            erros_desta_missao = erros_da_questao(nome_aluno, conteudo_id, missao_id)
             xp_ganho = calcular_xp_por_desempenho(pontos, erros_desta_missao)
             if erros_desta_missao > 0:
                 mensagem = f"🎉 Correto! +{xp_ganho} XP de {pontos} XP (descontado pelas tentativas)"
@@ -77,8 +79,6 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
             # embaixo de tudo na aba Questões (perto de onde o aluno clicou).
             st.session_state[f"ultimo_resultado_{conteudo_id}"] = mensagem
             perfil["xp_total"] = perfil.get("xp_total", 0) + xp_ganho
-            prog["missao_atual"] += 1
-            prog["erros_missao_atual"] = 0  # zera para a próxima questão começar sem desconto
             prog["historico"].append(f"✅ Questão {missao_id} concluída. Resposta: `{resposta_aluno}` (+{xp_ganho} XP)")
             st.session_state[f"m_{conteudo_id}_{missao_id}"] = resposta_aluno
             # Guarda TAMBÉM no banco (prog["respostas"], persistido por
@@ -87,11 +87,14 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
             # depois via outra sessão via as questões já feitas mostrando
             # "(Resposta: None)" — bug relatado pelo Wenes (2026-09-14).
             prog.setdefault("respostas", {})[str(missao_id)] = resposta_aluno
+            # missao_atual = questões concluídas + 1: é o número que o resto do sistema
+            # usa para contar progresso, e agora não depende mais da ordem das questões.
+            prog["missao_atual"] = len(prog["respostas"]) + 1
+            st.session_state[f"ultima_questao_{conteudo_id}"] = missao_id
             salvar_perfil_e_progresso(nome_aluno, conteudo_id, perfil, prog)
             st.rerun()
         else:
             prog["erros"] = prog.get("erros", 0) + 1
-            prog["erros_missao_atual"] = prog.get("erros_missao_atual", 0) + 1
             salvar_perfil_e_progresso(nome_aluno, conteudo_id, perfil, prog)
             # Limpa o "🎉 Correto!" da questão anterior: sem isso, ele ficava
             # em session_state pra sempre (só é sobrescrito num ACERTO) e
@@ -103,35 +106,28 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
             st.error("❌ Resposta incorreta. Revise o conteúdo e tente de novo!")
 
 
-def renderizar_ultimo_resultado(conteudo_id):
-    """Mostra o resultado da última questão respondida CORRETAMENTE dentro
-    deste conteúdo, de forma persistente — sem sumir sozinha, ao contrário do
-    st.success() antigo que ficava só uma fração de segundo antes do
-    st.rerun() trocar a tela (ver verificar_resposta). Fica visível até o
-    aluno responder a questão seguinte, quando o texto é substituído.
-
-    Chamada DEPOIS de desenhar a(s) questão(ões) (não antes, perto do selo de
-    XP): tem que cair perto de onde o aluno já está olhando, embaixo do botão
-    "Verificar Resposta" que ele acabou de clicar — a mesma posição de onde
-    já fica o "❌ Resposta incorreta" quando erra."""
-    mensagem = st.session_state.get(f"ultimo_resultado_{conteudo_id}")
-    if mensagem:
-        st.success(mensagem)
-
-
 def render_missoes_dinamicas(conteudo):
+    """Todas as questões ficam visíveis, e o aluno responde na ordem que quiser.
+    A questão já concluída vira uma linha verde com a resposta; a que falta mostra
+    o enunciado e o botão. O XP ganho aparece na linha da questão que acabou de ser feita."""
     cid = st.session_state.conteudo_ativo
     missoes = conteudo.get("missoes", [])
     prog = progresso_atual(cid)
+    respostas = prog.get("respostas", {})
 
     if not missoes:
         st.info("📭 Este conteúdo ainda não possui questões cadastradas. Peça ao professor para adicioná-las no Painel do Professor.")
         return
 
+    ultima = st.session_state.get(f"ultima_questao_{cid}")
+    mensagem = st.session_state.get(f"ultimo_resultado_{cid}")
     for idx, missao in enumerate(missoes, start=1):
-        if prog["missao_atual"] > idx:
-            st.success(f"✅ Questão {idx} Concluída! (Resposta: {st.session_state.get(f'm_{cid}_{idx}')})")
-        elif prog["missao_atual"] == idx:
+        if str(idx) in respostas:
+            texto = f"✅ Questão {idx} Concluída! (Resposta: {respostas[str(idx)]})"
+            if ultima == idx and mensagem:
+                texto += "  \n" + mensagem
+            st.success(texto)
+        else:
             st.markdown(f"### 📍 Questão {idx}: {missao.get('titulo', f'Desafio {idx}')}")
             st.write(missao.get("pergunta", ""))
             tipo = missao.get("tipo", "numero")
@@ -149,6 +145,6 @@ def render_missoes_dinamicas(conteudo):
                 resposta = st.text_input("Sua resposta:", key=f"in_{cid}_{idx}")
             verificar_resposta(cid, idx, resposta, missao.get("resposta"), missao.get("pontos", 10), tipo=tipo)
 
-    if prog["missao_atual"] > len(missoes):
+    if len(respostas) >= len(missoes):
         st.balloons()
-        st.success("🏆 PARABÉNS! Você concluiu toda a avaliação deste conteúdo!")
+        st.success("🏆 PARABÉNS! Você concluiu todas as questões desta disciplina!")

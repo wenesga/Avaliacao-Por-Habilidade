@@ -4,7 +4,7 @@ import streamlit as st
 from banco import perfil_atual, progresso_atual
 from config import ABA_MISSOES, ABA_TEORIA, PAGINA_INICIO
 from conteudos import obter_total_missoes
-from missoes import render_missoes_dinamicas, renderizar_ultimo_resultado
+from missoes import render_missoes_dinamicas
 
 
 def render_pagina_conteudo_dinamico(conteudo):
@@ -92,13 +92,5 @@ def render_pagina_materia():
                 unsafe_allow_html=True,
             )
             render_missoes_dinamicas(conteudo)
-            # Embaixo, não em cima: é onde o olhar do aluno já está depois de
-            # clicar em "Verificar Resposta" (mesma posição do "❌ Resposta
-            # incorreta", que fica logo abaixo do botão). Uma versão anterior
-            # mostrava isso no topo, junto do selo de XP — só visível rolando
-            # a tela pra cima, o que o Wenes apontou (2026-09-14) que recriava
-            # o mesmo problema de antes (informação fora de vista), só que
-            # em vez de sumir rápido, ficava escondida longe do clique.
-            renderizar_ultimo_resultado(cid)
     else:
         render_pagina_conteudo_dinamico(conteudo)
