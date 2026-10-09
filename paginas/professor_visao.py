@@ -88,7 +88,7 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None, de="", at
             "conforme os alunos respondem as questões que têm uma **habilidade** mapeada (descritor SAETO)."
         )
         return
-    st.caption("Entre parênteses: acertos e tentativas. Traço: sem tentativa.")
+    st.caption("Entre parênteses: questões acertadas de primeira e questões respondidas. Traço: sem resposta.")
     st.caption(LEGENDA_FAIXAS)
     linhas_txt, linhas_css = [], []
     for rotulo, pares in linhas:
@@ -102,14 +102,7 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None, de="", at
             ])
         else:
             linhas_css.append([""] + [fundo_acerto(p) if p is not None else "" for p in pcts])
-    # Título de cada coluna com o total de questões da habilidade, pra dar a medida
-    # do "(acertos/tentativas)".
-    total_missoes = {l["Habilidade"]: l["Questões"] for l in desempenho_por_descritor(alunos, conteudo_id)}
-    # "(N questões)" só aparece quando o descritor tem mais de uma questão: com uma só, é ruído.
-    titulos = [
-        f"{h}" + chr(10) + f"({total_missoes[h]} questões)" if total_missoes.get(h, 1) > 1 else h
-        for h in habilidades
-    ]
+    titulos = list(habilidades)
     df_txt = pd.DataFrame(linhas_txt, columns=["Aluno"] + titulos)
     df_css = pd.DataFrame(linhas_css, columns=["Aluno"] + titulos)
     tabela_centralizada(df_txt, df_css)
