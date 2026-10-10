@@ -20,7 +20,7 @@ def render_placar_turma():
     consulta enxuta de ranking_turma(), a carga é desprezível.
 
     Mostrar o desempenho em público só é aceitável porque o aluno entra com
-    apelido (ver "O aluno entra com APELIDO" no CLAUDE.md): o objetivo não é
+    apelido: o objetivo não é
     anonimato, é não expor o nome de quem está atrás. Quem quiser se revelar,
     se revela — e isso vira parte da brincadeira."""
     placar = ranking_turma()
@@ -54,8 +54,8 @@ def renderizar_grade_cartoes(cartoes, prefixo_key):
     progresso} — on_click é uma função SEM argumento, chamada ao clicar no
     botão (varia: pode abrir uma matéria direto, ou abrir o hub de
     Estatística). "progresso" é opcional: uma string tipo "3/8" ou "✓" pra
-    mostrar quantas questões DAQUELE card específico já foram concluídas —
-    pedido do Wenes (2026-09-14), porque o "8/44" do menu lateral soma os 6
+    mostrar quantas questões DAQUELE card específico já foram concluídas.
+    Necessário porque o "8/44" do menu lateral soma os 6
     sub-temas de Estatística juntos e não dá pra saber, olhando só ali, quanto
     cada um já rendeu individualmente.
 
@@ -69,12 +69,7 @@ def renderizar_grade_cartoes(cartoes, prefixo_key):
             cor = PALETA_CORES_CARTAO[idx_global % len(PALETA_CORES_CARTAO)]
             with colunas[i]:
                 with st.container(border=True, key=f"{prefixo_key}_cartao_{idx_global}_cor_{cor}"):
-                    # Progresso na MESMA linha do título, texto simples (sem
-                    # badge colorido) — mesmo padrão já usado no menu lateral
-                    # ("📊 Estatística · 1/44"). Uma versão anterior usava um
-                    # badge numa linha própria, mas isso deixava o card mais
-                    # alto que o necessário só por causa de uma informação
-                    # curta — pedido do Wenes (2026-09-14).
+                    # Progresso na MESMA linha do título, texto simples (sem badge colorido) — mesmo padrão já usado no menu lateral ("📊 Estatística · 1/44"). Uma versão anterior usava um badge numa linha própria, mas isso deixava o card mais alto que o necessário só por causa de uma informação curta.
                     titulo_linha = f"#### {cartao['icone']} {cartao['titulo']}"
                     if cartao.get("progresso"):
                         titulo_linha += f"  ·  {cartao['progresso']}"
@@ -124,12 +119,7 @@ def render_pagina_inicial():
         </div>
         """, unsafe_allow_html=True)
 
-    # Dentro de um expander, FECHADO por padrão — quem tem curiosidade clica e
-    # vê, quem não tem, nem repara que existe (decisão de 2026-09-05, a pedido
-    # do usuário). Cada navegador é uma sessão isolada do Streamlit: o
-    # professor abrir ou fechar no notebook projetado no data show não afeta
-    # o que aparece no celular de nenhum aluno. Também ajuda com turma grande,
-    # onde a lista ficaria comprida antes do resto da página.
+    # Dentro de um expander, FECHADO por padrão — quem tem curiosidade clica e vê, quem não tem, nem repara que existe. Cada navegador é uma sessão isolada do Streamlit: o professor abrir ou fechar no notebook projetado no data show não afeta o que aparece no celular de nenhum aluno. Também ajuda com turma grande, onde a lista ficaria comprida antes do resto da página.
     with st.expander("🏆 Placar da Turma", expanded=False):
         render_placar_turma()
     st.write("")

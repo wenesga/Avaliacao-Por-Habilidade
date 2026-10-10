@@ -21,7 +21,7 @@ def obter_logo_base64():
 def aplicar_estilo():
     st.markdown("""
 <style>
-    /* Limita a largura do conteúdo principal e centraliza (estilo ChatGPT/X.com)
+    /* Limita a largura do conteúdo principal e centraliza
        em vez de esticar de ponta a ponta em monitores grandes. Não afeta a
        barra lateral, que tem sua própria largura fixa. O Streamlit já aplica
        um padding interno grande por padrão; reduzimos ele aqui pra sobrar
@@ -36,27 +36,21 @@ def aplicar_estilo():
            sobrar espaço embaixo da barra flutuante (Deploy/menu) — mas
            aqui essa barra é baixa e o conteúdo já tem título próprio logo
            abaixo, então sobrava um vão vazio grande no topo de toda
-           página, banner ou não (relatado pelo Wenes, 2026-09-17,
-           print mostrando o espaço em ambos os casos). Medido: era 96px,
-           cortado pra 24px, depois pra 0 — aí ficou colado demais ("vixe,
-           agora ficou colado"), então 38px (~1cm a 96dpi) de volta, pra
-           dar uma folga mínima. Mais 19px (~5mm) depois que a barra de
-           ferramentas do Streamlit voltou a mostrar o ícone de abrir/
-           fechar a barra lateral, pra não ficar colado nele — depois
-           ajustado à mão pelo Wenes direto no arquivo pra 60px ("ficou
-           perfeito", 2026-09-17). */
+           página, banner ou não. O valor original era 96px; reduzido para 60px,
+           que deixa uma folga mínima e não encosta no ícone de abrir/fechar a
+           barra lateral da barra de ferramentas do Streamlit. */
         padding-top: 60px;
     }
 
     /* Só o botão "Deploy" (chrome do Streamlit Cloud) — NÃO a barra inteira.
-       O "⋮" fica visível (2026-09-25, pedido do Wenes) pra trocar o tema
+       O "⋮" fica visível pra trocar o tema
        claro/escuro. Versão
        anterior escondia a barra toda (`[data-testid="stHeader"]
        {display:none}`), e isso quebrou o botão de expandir a barra
-       lateral: quando o Wenes encolhia a barra lateral e recarregava a
+       lateral: ao encolher a barra lateral e recarregar a
        página, o botão pra abrir de novo (`stExpandSidebarButton`) mora
        DENTRO dessa mesma barra escondida, então ficava sem jeito nenhum
-       de reabrir (bug relatado 2026-09-17). Escondendo só os dois botões
+       de reabrir. Escondendo só os dois botões
        específicos, o resto da barra (inclusive esse controle) continua
        funcionando normalmente. */
     [data-testid="stAppDeployButton"] {
@@ -69,8 +63,8 @@ def aplicar_estilo():
        da página, com o gap de 16px entre itens contando mesmo pra quem tem
        altura zero. No topo da página isso somava 96px de vão vazio — medido
        ao vivo, era o resto do espaço que sobrava depois do padding-top e da
-       barra Deploy já cortados (Wenes, 2026-09-17: "ainda tá uns 2cm"). Achado
-       inspecionando o DOM: 6 stElementContainer de altura 0 antes do primeiro
+       barra Deploy já cortados. Verificado inspecionando o DOM: 6
+       stElementContainer de altura 0 antes do primeiro
        botão. display:none tira da lista de vez, sem gap nenhum — e um <style>
        escondido continua valendo normalmente, isso é comportamento padrão do
        HTML/CSS, não depende do elemento estar visível. */
@@ -87,8 +81,8 @@ def aplicar_estilo():
        sobra de uma versão antiga. Deixada como está (não é deste ajuste),
        mas fica o registro pra quem for limpar código depois. */
 
-    /* Selo de XP acima da Avaliação (2026-09-05) — pedido do usuário
-       pra dar mais destaque ao XP acumulado, além do texto pequeno que já
+    /* Selo de XP acima da Avaliação — destaca o XP acumulado,
+       além do texto pequeno que já
        existe na barra lateral. Gradiente opaco + texto branco (mesma técnica
        do .home-banner), não rgba() semi-transparente: aqui o objetivo é
        "saltar aos olhos" como um emblema de jogo, não se misturar ao tema. */
@@ -143,7 +137,7 @@ def aplicar_estilo():
        detectar o tema: rgba() semi-transparente vira um "tingimento" sobre
        o que estiver por trás, então se adapta sozinho. Opacidade calibrada
        pra bater com os tons reais que o Streamlit usa (~#f0f2f6 no claro,
-       ~#262730 no escuro — conferido ao vivo nos dois). Sem "color" no
+       ~#262730 no escuro). Sem "color" no
        texto, ele herda a cor certa do tema automaticamente. */
     .home-step-card {
         background-color: rgba(148, 163, 184, 0.16); border: 1px solid rgba(148, 163, 184, 0.4); border-radius: 12px;
@@ -262,8 +256,7 @@ def aplicar_estilo():
     /* Cada conteúdo cadastrado (Painel do Professor > Gerenciar Conteúdos) é
        um st.container(border=True) — cartão de verdade, com borda e cantos
        arredondados, em vez da lista em colunas com uma linha horizontal
-       entre cada item. Pedido do Wenes (2026-09-14): "mais elegante e
-       estilizado", mas com estilo PRÓPRIO do painel do professor — não é
+       entre cada item. Estilo PRÓPRIO do painel do professor — não é
        pra copiar o card do aluno na Início, que mostra outra informação. */
     div[class*="st-key-card_conteudo_"] {
         margin-bottom: 12px;
@@ -291,8 +284,8 @@ def aplicar_estilo():
 
     /* Cards suaves dos 3 totais de XP em Configurações (Matéria Padrão /
        Matérias Cadastradas / Total do catálogo) — antes usava st.metric(),
-       que só desenha número preto puro sem nenhuma cor de fundo; o Wenes
-       achou "feio" pro Painel do Professor (2026-09-17), queria algo mais
+       que só desenha número preto puro sem nenhuma cor de fundo; aqui se
+       usa um visual mais
        suave. Reaproveita as MESMAS cores dos badges de card (indigo dos
        badges de tipo, verde do descritor) + um terceiro tom neutro pro total,
        que é soma dos outros dois, não uma categoria própria. */
@@ -314,7 +307,7 @@ def aplicar_estilo():
         font-weight: 700;
     }
     /* Em tela estreita (celular), st.columns empilha os 3 cards um embaixo
-       do outro — e aí eles ficavam colados (relatado pelo Wenes, 2026-09-22).
+       do outro — e aí eles ficavam colados.
        Causa: o stMarkdownContainer do Streamlit já vem com margin-bottom:
        -16px por padrão (serve pra cancelar um espaçamento dele mesmo quando
        tem mais coisa depois dentro do mesmo bloco). Em coluna lado a lado
@@ -331,14 +324,12 @@ def aplicar_estilo():
 
     /* Pop-up de "Salvo com sucesso" (ver renderizar_flash_pendente): fixo no
        canto superior direito, por cima de tudo, pra não precisar rolar a
-       tela pra ver — bug relatado pelo Wenes (2026-09-17), editou um
-       conteúdo longo, salvou, e a mensagem apareceu lá em cima, fora da
-       tela. st.toast() faria isso nativamente (mesma posição, canto
-       superior direito), mas parou de funcionar neste ambiente. Pequeno de
-       propósito ("espero que não seja grandão", Wenes 2026-09-17): não é um
-       modal, não bloqueia clique em nada por trás. Some sozinho em 3s via
-       animação CSS (Wenes, 2026-09-17: "rápido, um dois três segundos, não
-       pode ficar lá a vida toda") — st.markdown não executa <script>, então
+       tela pra ver (caso típico: editar um conteúdo longo, salvar, e a
+       mensagem aparecer lá em cima, fora da tela). st.toast() faria isso
+       nativamente (mesma posição, canto superior direito), mas parou de
+       funcionar neste ambiente. Pequeno de propósito: não é um modal, não
+       bloqueia clique em nada por trás. Some sozinho em 3s via animação CSS
+       — st.markdown não executa <script>, então
        não dá pra usar um timer JS; keyframes resolve sem precisar de JS. */
     @keyframes flash-toast-sumir {
         0%, 80% { opacity: 1; }
@@ -378,8 +369,8 @@ def aplicar_estilo():
         flex: 0 0 auto !important;
     }
     /* Em tela estreita (celular), o Streamlit faz duas coisas ao mesmo tempo
-       que juntas quebravam essa fileira de botões (confirmado testando ao
-       vivo no celular, 2026-09-14): empilha QUALQUER st.columns() na
+       que juntas quebravam essa fileira de botões (verificado no celular):
+       empilha QUALQUER st.columns() na
        vertical, E força min-width: calc(100% - 24px) em cada coluna —
        quase a largura inteira do card, pensado pra layout empilhado. A
        primeira tentativa de correção só forçou a linha a ficar horizontal
@@ -400,8 +391,8 @@ def aplicar_estilo():
     }
 
     /* Botão "Sair" do Painel do Professor: empurra pra borda direita da
-       coluna sem esticar o botão. Duas pegadinhas encontradas medindo ao
-       vivo (2026-09-14), não adivinhando:
+       coluna sem esticar o botão. Duas pegadinhas, encontradas medindo no
+       navegador:
        1) O container do Streamlit por baixo dos panos já é flex-direction:
           COLUNA — então justify-content controla o eixo VERTICAL, não o
           horizontal (por isso não tinha efeito nenhum). Quem alinha no eixo
@@ -419,7 +410,7 @@ def aplicar_estilo():
     }
 
     /* Sobe o conteúdo inteiro da barra lateral (Início + tudo abaixo) uns 5mm
-       (~19px) pra cima — pedido do Wenes (2026-09-13). O espaço de origem não
+       (~19px) pra cima. O espaço de origem não
        é nosso: é margin-bottom:16px do próprio cabeçalho do Streamlit (ícone
        de recolher a barra), medido ao vivo via getBoundingClientRect(); não
        dá pra mexer nesse cabeçalho sem arriscar cortar o ícone, então o ajuste
@@ -428,7 +419,7 @@ def aplicar_estilo():
         margin-top: -19px;
     }
 
-    /* Menu lateral estilo app (Gmail/ChatGPT): botões colados, alinhados à esquerda,
+    /* Menu lateral: botões colados, alinhados à esquerda,
        com destaque visual para o item ativo e hover suave no restante. */
     div[data-testid="stSidebar"] button {
         margin-bottom: 4px;
@@ -498,8 +489,8 @@ def aplicar_estilo():
        Padrão" (roxo/azul) de "Matérias Cadastradas" (verde) mesmo em
        repouso, sem pintar o botão inteiro (encostaria na cor do item
        ativo e viraria parque de diversão). Primeira versão era cinza neutro,
-       mas ficou imperceptível demais — trocada por cor de verdade a pedido
-       do Wenes (2026-09-14), mantendo elegante por ser só um traço fino, não
+       mas ficou imperceptível demais — trocada por cor de verdade,
+       mantendo discreto por ser só um traço fino, não
        um preenchimento. Cores emprestadas dos badges do Painel do Professor
        (.badge-conteudo-tipo / .badge-conteudo-descritor), pra usar a mesma
        linguagem visual em vez de inventar uma terceira paleta. Some quando o
@@ -597,7 +588,7 @@ def aplicar_estilo():
         flex-direction: column;
         align-items: center;
         text-align: center;
-        /* Aproxima o título da logo — pedido do Wenes (2026-09-13). O
+        /* Aproxima o título da logo. O
            espaçamento de origem (16px) não vem de nenhuma margem nossa: é o
            "gap" padrão que o Streamlit aplica entre elementos empilhados
            dentro de um container, confirmado medindo ao vivo (getBoundingClientRect

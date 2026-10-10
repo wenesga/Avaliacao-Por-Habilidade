@@ -58,9 +58,7 @@ def campo_descritor(rotulo, valor_atual="", chave=None, ajuda=""):
     indice = opcoes.index(valor_atual) if valor_atual else None
     escolhida = st.selectbox(
         rotulo, opcoes, index=indice, key=chave, help=ajuda,
-        # Rótulo com a descrição INTEIRA: o Streamlit só pesquisa dentro do rótulo, e
-        # a lista já corta a linha sozinha. Assim dá para achar "mediana" mesmo que a
-        # palavra esteja no fim da descrição.
+        # Rótulo com a descrição INTEIRA: o Streamlit só pesquisa dentro do rótulo, e a lista já corta a linha sozinha. Assim dá para achar "mediana" mesmo que a palavra esteja no fim da descrição.
         format_func=lambda c: f"{c} · {habilidades[c]}" if c in habilidades else c,
         placeholder="Digite o código ou uma palavra da habilidade",
         accept_new_options=True,  # descritor fora da lista: o professor digita o código
@@ -73,7 +71,7 @@ def descritores_do_conteudo(cid, c):
     conteúdo cadastrado pelo professor. Lista vazia se nenhuma
     questão foi mapeada. Usado só no Painel do Professor (Gerenciar
     Conteúdos): é informação de planejamento curricular, sem utilidade pro
-    aluno durante o jogo — decisão do Wenes (2026-09-14)."""
+    aluno durante o jogo."""
     codigos = {str(m.get("descritor", "")).strip() for m in c.get("missoes", [])}
     codigos.discard("")
     return sorted(codigos)
