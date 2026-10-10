@@ -1,6 +1,5 @@
 """Painel do Professor: Gerenciar Conteúdos."""
 
-import streamlit.components.v1 as components
 import streamlit as st
 import uuid
 from conteudos import salvar_conteudos, xp_maximo_de_conteudo
@@ -115,15 +114,15 @@ def render_gerenciar_conteudos():
         Ao clicar em "Editar" na lista, o formulário aparece mais abaixo sem aviso; a tela rola
         sozinha até ele.
         """
-        components.html(
+        st.iframe(
             """
             <script>
             const ancora = window.parent.document.getElementById('ancora-form-conteudo');
             if (ancora) { ancora.scrollIntoView({behavior: 'smooth', block: 'start'}); }
             </script>
             """,
-            height=0,
-            width=0,
+            height=1,
+            width=1,
         )
     else:
         st.subheader("➕ Criar Novo Conteúdo")

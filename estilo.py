@@ -40,7 +40,7 @@ def aplicar_estilo():
         display: none;
     }
 
-    /* Cada bloco invisível (os components.html(..., height=0) que injetam JS e o próprio <style>)
+    /* Cada bloco invisível (os st.iframe(..., height=1) que injetam JS e o próprio <style>)
        ocupa uma vaga na lista vertical, e o gap de 16px entre itens conta mesmo com altura zero,
        somando espaço vazio no topo. display:none remove esses itens da lista sem gap; um <style>
        escondido continua valendo normalmente. */
