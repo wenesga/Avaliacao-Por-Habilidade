@@ -18,8 +18,10 @@ def render_pagina_conteudo_dinamico(conteudo):
         st.info("📭 Esta disciplina ainda não possui orientações cadastradas. Peça ao professor para adicioná-las no Painel do Professor.")
         return
 
-    # st.expander de verdade (o mesmo componente do conteúdo estático, não uma
-    # imitação) com expanded=True — já abre mostrando o conteúdo, mas o aluno pode recolher se quiser limpar a tela.
+    """
+    st.expander (mesmo componente do conteúdo estático) com expanded=True: abre mostrando o
+    conteúdo, e o aluno pode recolher.
+    """
     for i, secao in enumerate(secoes, start=1):
         with st.expander(f"{i}️⃣ {secao.get('titulo', '')}", expanded=True):
             st.markdown(secao.get("texto", ""))
@@ -34,16 +36,23 @@ def render_pagina_materia():
     cid = st.session_state.conteudo_ativo
     conteudo = st.session_state.conteudos[cid]
 
-    # Botão "← Voltar" em TODA matéria — sem ele, quem chegou aqui clicando num cartão da Início ou no hub de Estatística só tem como sair clicando de novo no menu lateral, o que nem todo aluno pensa em fazer sozinho. O botão Voltar do navegador não ajuda aqui (é uma SPA, não existe "página anterior" de verdade pro navegador voltar). Rótulo só "Voltar", sem dizer pra onde — não precisa, é óbvio pelo lugar. Os 6 sub-temas de Estatística voltam pro hub (é de lá que vieram); as demais matérias (cadastradas pelo professor) voltam direto pra Início, que é o único lugar de onde elas são abertas.
+    """
+    Botão "← Voltar" em toda matéria: o botão Voltar do navegador não ajuda (o app é uma SPA, sem
+    "página anterior"). Os 6 sub-temas de Estatística voltam para o hub; as demais matérias
+    (cadastradas) voltam para a Início, único lugar de onde são abertas.
+    """
     if st.button("← Voltar", key="voltar_materia"):
         st.session_state.pagina = PAGINA_INICIO
         st.rerun()
 
     st.title(f"{conteudo['icone']} {conteudo['titulo']}")
 
-    # Teoria x Questões é uma troca DENTRO da matéria (e a de maior frequência no app: o aluno lê a fórmula, tenta a questão, volta na fórmula), por isso fica colada no conteúdo e não no menu lateral. Dois botões em vez de
-    # st.segmented_control de propósito: o segmented_control desmarca a opção
-    # quando você clica nela de novo (vira None), e aqui não existe "nenhuma seção selecionada". Botões também mantêm a mesma linguagem visual do menu lateral (ativo = type="primary").
+    """
+    Teoria x Questões é uma troca dentro da matéria (a mais frequente do app), por isso fica junto
+    ao conteúdo e não no menu lateral. Usa dois botões em vez de st.segmented_control, que desmarca
+    a opção ao clicar nela de novo (vira None), e aqui sempre há uma seção selecionada. Os botões
+    também mantêm a linguagem visual do menu lateral (ativo = type="primary").
+    """
     col_teoria, col_missoes, _ = st.columns([1, 1, 3])
     with col_teoria:
         if st.button(ABA_TEORIA, use_container_width=True, key="aba_btn_teoria",
@@ -67,7 +76,11 @@ def render_pagina_materia():
         if not st.session_state.aluno_ativo:
             st.warning("⚠️ Olá! Escolha um apelido na barra lateral à esquerda para carregar o seu perfil e começar a ganhar XP.")
         else:
-            # Selo de XP em destaque no topo da Avaliação — um lugar só, vale tanto pro conteúdo nativo de Estatística quanto pros cadastrados pelo professor, sem duplicar em cada função de questão.
+            """
+            Selo de XP em destaque no topo da Avaliação — um lugar só, vale tanto pro conteúdo
+            nativo de Estatística quanto pros cadastrados pelo professor, sem duplicar em cada
+            função de questão.
+            """
             xp_atual = perfil_atual()["xp_total"]
             st.markdown(
                 f'<div class="xp-destaque-missoes">'

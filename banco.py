@@ -10,8 +10,11 @@ from config import ARQUIVO_ALUNOS, ARQUIVO_ALUNOS_DB
 from descritores import obter_descritor_missao
 
 
-# ---------- Banco de alunos (SQLite) ----------
-# Trocado de JSON pra SQLite porque, numa aula de verdade, vários alunos respondem questões ao mesmo tempo. O jeito antigo lia o arquivo inteiro, mudava um pedaço e regravava o arquivo inteiro — se dois alunos salvassem quase juntos, o segundo podia sobrescrever e apagar o progresso do primeiro. Com SQLite, cada aluno grava só a própria linha (UPDATE/INSERT pontual), então um não pisa no dado do outro.
+"""
+---------- Banco de alunos (SQLite) ----------
+Usa SQLite porque vários alunos respondem ao mesmo tempo: cada um grava só a própria linha
+(UPDATE/INSERT pontual), sem reescrever um arquivo inteiro e sem sobrescrever o progresso de outro.
+"""
 def perfil_padrao():
     return {"xp_total": 0, "progresso": {}, "inicio_sessao": time.time()}
 
@@ -48,25 +51,42 @@ def inicializar_banco_db():
                 PRIMARY KEY (aluno, conteudo_id)
             )
         """)
-        # "erros" (acima) é o total do conteúdo inteiro, usado no relatório do professor. "erros_missao_atual" é zerado a cada vez que o aluno avança de questão — é o que alimenta o desconto de XP por tentativa (ver calcular_xp_por_desempenho): sem separar os dois, não teria como saber quantas vezes o aluno errou NA QUESTÃO ATUAL antes de acertar.
+        """
+        "erros" é o total do conteúdo, usado no relatório. "erros_missao_atual" é zerado ao avançar
+        de questão e alimenta o desconto de XP por tentativa (ver calcular_xp_por_desempenho).
+        """
         colunas_progresso = {row["name"] for row in conn.execute("PRAGMA table_info(progresso)")}
         if "erros_missao_atual" not in colunas_progresso:
             conn.execute("ALTER TABLE progresso ADD COLUMN erros_missao_atual INTEGER NOT NULL DEFAULT 0")
-        # "respostas" guarda {"1": "8", "2": "61.7", ...} — a resposta que o aluno deu em cada questão já concluída. Faltava desde o começo: só ficava em st.session_state (memória da sessão do navegador), nunca no banco. "missao_atual" sim é salvo, então o aluno reabrindo o app noutra sessão continuava exatamente de onde parou, mas as linhas "✅ Questão N Concluída! (Resposta: ...)" das questões anteriores apareciam com "None" — a sessão nova nunca teve aquele valor em memória.
+        """
+        "respostas" guarda {"1": "8", "2": "61.7", ...}: a resposta dada em cada questão concluída,
+        para exibi-la em qualquer sessão (o estado da sessão do navegador não persiste).
+        """
         if "respostas" not in colunas_progresso:
             conn.execute("ALTER TABLE progresso ADD COLUMN respostas TEXT NOT NULL DEFAULT '{}'")
-        # Nome que o professor quer ver NO RELATÓRIO ("João Batista"), separado do "nome" com que o aluno faz login ("Goku99", "Player1"). São coisas diferentes de propósito: "nome" é chave primária e liga o aluno ao progresso dele, então renomear quebraria o vínculo — no próximo login o aluno cairia num perfil vazio e perderia o XP. Esta coluna é só exibição, nunca é usada pra buscar nada.
+        """
+        Nome exibido no relatório ("João Batista"), separado do "nome" de login ("Goku99"). "nome" é
+        a chave primária que liga o aluno ao progresso, então renomeá-lo perderia o vínculo. Esta
+        coluna é só de exibição e nunca é usada em buscas.
+        """
         colunas_alunos = {row["name"] for row in conn.execute("PRAGMA table_info(alunos)")}
         if "nome_relatorio" not in colunas_alunos:
             conn.execute("ALTER TABLE alunos ADD COLUMN nome_relatorio TEXT NOT NULL DEFAULT ''")
-        # Contador de acessos: uma linha por dia com quantas vezes o app foi aberto (cada sessão nova do navegador conta uma vez). Só o número: não guarda IP, aparelho nem quem abriu.
+        """
+        Contador de acessos: uma linha por dia com quantas vezes o app foi aberto (cada sessão nova
+        do navegador conta uma vez). Guarda só o número, sem IP, aparelho ou identificação.
+        """
         conn.execute("""
             CREATE TABLE IF NOT EXISTS acessos (
                 dia TEXT PRIMARY KEY,
                 total INTEGER NOT NULL DEFAULT 0
             )
         """)
-        # Uma linha por TENTATIVA de resposta (acerto ou erro). É daqui que sai o "acerto por aluno em cada habilidade" do Painel do Professor: o campo "missao_atual" só diz até onde o aluno chegou, não quanto ele acertou. Só passa a existir a partir da primeira resposta depois desta versão: o histórico antigo não guardava o resultado de cada questão.
+        """
+        Uma linha por tentativa de resposta (acerto ou erro). Alimenta o acerto por aluno em cada
+        habilidade do Painel do Professor, que não pode ser derivado de missao_atual (só indica até
+        onde o aluno chegou).
+        """
         conn.execute("""
             CREATE TABLE IF NOT EXISTS tentativas_missao (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,8 +104,10 @@ def inicializar_banco_db():
 
 
 def dia_de_hoje_brasilia():
-    """Data de hoje no horário de Brasília (UTC-3, sem horário de verão). O
-    servidor do Fly.io roda em UTC, então date.today() viraria o dia às 21h."""
+    """
+    Data de hoje no horário de Brasília (UTC-3). O servidor do Fly.io usa UTC, então date.today()
+    trocaria de dia às 21h.
+    """
     return datetime.now(timezone(timedelta(hours=-3))).strftime("%Y-%m-%d")
 
 
@@ -119,8 +141,10 @@ def contar_acessos():
 
 
 def migrar_json_para_sqlite_se_necessario():
-    """Importa o banco_alunos.json antigo pro SQLite, uma única vez (se o
-    banco novo ainda estiver vazio e o arquivo antigo existir)."""
+    """
+    Importa o banco_alunos.json antigo para o SQLite, uma única vez (se o banco novo estiver vazio e
+    o arquivo existir).
+    """
     if not os.path.exists(ARQUIVO_ALUNOS):
         return
     conn = obter_conexao_db()
@@ -162,9 +186,10 @@ def migrar_json_para_sqlite_se_necessario():
 
 
 def carregar_todos_alunos_do_banco():
-    """Lê o estado atual de TODOS os alunos direto do banco. Usado no Painel
-    do Professor, que precisa ver o progresso da turma inteira em tempo
-    real — não só o que a sessão do navegador do professor carregou uma vez."""
+    """
+    Lê o estado atual de todos os alunos direto do banco, para o Painel do Professor refletir a
+    turma em tempo real.
+    """
     conn = obter_conexao_db()
     try:
         alunos = {}
@@ -221,7 +246,11 @@ def progresso_atual(conteudo_id=None):
         if row is None:
             return progresso_padrao()
         respostas = json.loads(row["respostas"]) if row["respostas"] else {}
-        # Recoloca as respostas salvas em st.session_state: é de lá que todo "✅ Questão N Concluída! (Resposta: ...)" já espalhado pelo código lê o valor (ver verificar_resposta) — sem essa "hidratação" aqui, cada um desses 40+ pontos de exibição precisaria ser reescrito pra ler de outro lugar. Só preenche o que ainda não está em memória (não pisa numa resposta desta MESMA sessão, mais recente que a gravada no banco no meio de uma questão em andamento).
+        """
+        Recoloca as respostas salvas em st.session_state, de onde o código lê o valor exibido em "✅
+        Questão N Concluída! (Resposta: ...)" (ver verificar_resposta). Só preenche o que ainda não
+        está em memória, para não sobrescrever uma resposta mais recente da mesma sessão.
+        """
         for idx_str, resp in respostas.items():
             chave = f"m_{conteudo_id}_{idx_str}"
             if chave not in st.session_state:
@@ -342,17 +371,18 @@ def registrar_tentativa_missao(aluno, conteudo_id, missao, acertou):
 
 
 def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
-    """Acerto de cada aluno em cada descritor, a partir das tentativas
-    (só as de um conteúdo se conteudo_id for dado), só das tentativas entre as datas
-    `de` e `ate` (AAAA-MM-DD, inclusive; vazio = sem limite) e só dos descritores que
-    terminam em `sufixo` ("_M" Matemática, "_P" Português; vazio = todos).
+    """
+    Acerto de cada aluno em cada descritor, a partir das tentativas (só as de um conteúdo se
+    conteudo_id for dado), entre as datas `de` e `ate` (AAAA-MM-DD, inclusive; vazio = sem limite) e
+    só dos descritores que terminam em `sufixo` ("_M" Matemática, "_P" Português; vazio = todos).
 
-    Retorna (acertos, desde): acertos é {(aluno, habilidade): [acertos, questões]}
-    e desde é o dia (AAAA-MM-DD) da primeira tentativa gravada, ou '' se não há
-    nenhuma. Só a PRIMEIRA tentativa de cada questão conta: acertou de primeira =
-    1 acerto; errou, mesmo que depois tenha acertado, = 0. O segundo número é
-    quantas questões do descritor o aluno já respondeu. As tentativas seguintes
-    são treino e não entram aqui. Só as questões que têm descritor mapeado."""
+    Retorna (acertos, desde): acertos é {(aluno, habilidade): [acertos, questões]} e desde é o dia
+    (AAAA-MM-DD) da primeira tentativa gravada, ou '' se não há nenhuma.
+
+    Só a primeira tentativa de cada questão conta: acertou de primeira = 1 acerto; errou, mesmo que
+    depois acerte, = 0. O segundo número é quantas questões do descritor o aluno já respondeu. As
+    tentativas seguintes são treino e não entram. Só entram questões com descritor mapeado.
+    """
     acertos = {}
     desde = ""
     try:
@@ -367,7 +397,10 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
         return acertos, desde
     primeiras = set()
     for linha in linhas:
-        # A primeira tentativa é decidida antes dos filtros: se o filtro de período cortasse a primeira, as seguintes não podem passar por primeira.
+        """
+        A primeira tentativa é decidida antes dos filtros: se o filtro de período cortasse a
+        primeira, uma das seguintes poderia passar por primeira.
+        """
         chave = (linha["aluno"], linha["conteudo_id"], linha["missao"])
         if chave in primeiras:
             continue
@@ -405,13 +438,13 @@ def erros_da_questao(aluno, conteudo_id, missao):
 
 
 def ranking_turma(limite=10):
-    """[(apelido, xp)] dos alunos com mais XP, em ordem decrescente.
+    """
+    [(apelido, xp)] dos alunos com mais XP, em ordem decrescente.
 
-    Consulta enxuta de propósito: só nome e xp_total, ordenado e limitado pelo
-    próprio SQLite. O placar recarrega sozinho a cada poucos segundos no
-    navegador de cada aluno (ver render_placar_turma), então ele roda muito mais
-    vezes que o resto do app — não pode carregar o progresso da turma inteira
-    como carregar_todos_alunos_do_banco() faz."""
+    Consulta enxuta (só nome e xp_total, ordenada e limitada pelo SQLite) porque o placar recarrega
+    a cada poucos segundos no navegador de cada aluno (ver render_placar_turma) e roda muito mais
+    vezes que o resto do app.
+    """
     conn = obter_conexao_db()
     try:
         return [
@@ -426,11 +459,11 @@ def ranking_turma(limite=10):
 
 
 def progresso_resumo_aluno():
-    """{conteudo_id: missoes_concluidas} do aluno logado, em UMA consulta.
-    O menu lateral mostra o progresso de todas as matérias ao mesmo tempo;
-    chamar progresso_atual() uma vez por matéria abriria (e fecharia) uma
-    conexão pra cada uma, a cada rerun — e a Avaliação faz rerun a
-    cada resposta respondida."""
+    """
+    {conteudo_id: missoes_concluidas} do aluno logado, em uma única consulta. O menu lateral mostra
+    o progresso de todas as matérias e a Avaliação faz rerun a cada resposta; consultar matéria por
+    matéria abriria uma conexão para cada uma.
+    """
     nome = st.session_state.aluno_ativo
     if not nome:
         return {}
@@ -441,5 +474,8 @@ def progresso_resumo_aluno():
         ).fetchall()
     finally:
         conn.close()
-    # missao_atual aponta pra PRÓXIMA questão a responder (começa em 1), então o que já foi concluído é sempre missao_atual - 1.
+    """
+    missao_atual aponta para a próxima questão a responder (começa em 1), então o que já foi
+    concluído é sempre missao_atual - 1.
+    """
     return {linha["conteudo_id"]: max(linha["missao_atual"] - 1, 0) for linha in linhas}

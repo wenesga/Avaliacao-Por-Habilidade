@@ -10,7 +10,11 @@ from sessao import abrir_sessao_professor, encerrar_sessao_professor, sessao_pro
 
 
 def render_pagina_professor():
-    # "← Voltar" pra Início — diferente de "🚪 Sair" mais abaixo: Voltar só troca de tela, sem encerrar a sessão do professor (se estiver autenticado, continua autenticado ao clicar em Estatística ou Painel do Professor de novo, dentro dos 30 min); Sair encerra de propósito, pra passar o computador pra um aluno com segurança.
+    """
+    "← Voltar" para a Início só troca de tela, sem encerrar a sessão do professor (se estiver
+    autenticado, continua dentro do prazo de 30 min); "🚪 Sair" encerra de propósito, para passar o
+    computador a um aluno com segurança.
+    """
     if st.button("← Voltar", key="voltar_professor"):
         st.session_state.pagina = PAGINA_INICIO
         st.rerun()
@@ -27,19 +31,30 @@ def render_pagina_professor():
             else:
                 st.error("❌ Senha incorreta.")
     else:
-        # Renova o prazo a cada uso do painel: o tempo passa a contar do último uso, não do login, então a sessão não expira no meio de um cadastro.
+        """
+        Renova o prazo a cada uso do painel: o tempo passa a contar do último uso, não do login,
+        então a sessão não expira no meio de um cadastro.
+        """
         abrir_sessao_professor()
         _, colB = st.columns([4, 1])
         with colB:
-            # Empurra o botão pra borda direita SEM esticar ele — usar
-            # use_container_width=True (tentativa anterior) alargava o botão
-            # até preencher a coluna inteira, o que não é a mesma coisa que MOVER um botão de tamanho normal pra direita. O container vira flex com justify-content:flex-end, que empurra o filho (o botão, do próprio tamanho) pra ponta, sem mudar a largura dele.
+            """
+            Empurra o botão para a borda direita sem esticá-lo: use_container_width=True alargaria o
+            botão até preencher a coluna. O container vira flex com justify-content:flex-end, que
+            leva o botão, do próprio tamanho, até a ponta.
+            """
             with st.container(key="acao_sair_professor"):
                 if st.button("🚪 Sair"):
                     encerrar_sessao_professor()
                     st.rerun()
 
-        # Botões em vez de st.tabs(): a seleção do st.tabs() é client-side e volta pra primeira aba sozinha quando a árvore de elementos muda — e é exatamente o que acontece aqui (o formulário de editar conteúdo desaparece da tela ao salvar). Caso típico: editar um conteúdo, salvar, e cair de volta em "Visão Geral" em vez de continuar em "Gerenciar Conteúdos". Mesmo padrão e mesmo motivo do toggle Teoria/Questões (ver ir_para_materia).
+        """
+        Botões em vez de st.tabs(): a seleção do st.tabs() é client-side e volta pra primeira aba
+        sozinha quando a árvore de elementos muda — e é exatamente o que acontece aqui (o formulário
+        de editar conteúdo desaparece da tela ao salvar). Caso típico: editar um conteúdo, salvar, e
+        cair de volta em "Visão Geral" em vez de continuar em "Gerenciar Conteúdos". Mesmo padrão e
+        mesmo motivo do toggle Teoria/Questões (ver ir_para_materia).
+        """
         col_ab1, col_ab2, col_ab3 = st.columns(3)
         with col_ab1:
             if st.button(ABA_PROFESSOR_VISAO, use_container_width=True, key="aba_btn_professor_visao",

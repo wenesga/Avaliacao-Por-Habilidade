@@ -54,16 +54,25 @@ def render_configuracoes():
         unsafe_allow_html=True,
     )
 
-    # Seletor de conteúdo: o professor escolhe a disciplina do dia e vê o XP dela. Fora do form de propósito — precisa rerodar assim que troca a escolha, pra atualizar o campo de meta antes de clicar Salvar; widget de form só atualiza no submit, o que travaria isso.
+    """
+    Seletor de conteúdo: o professor escolhe a disciplina do dia e vê o XP dela. Fica fora do form
+    de propósito: precisa rerodar ao trocar a escolha, para atualizar o campo de meta antes de
+    Salvar (widgets de form só atualizam no submit).
+    """
     opcoes_conteudo = {"__catalogo__": "Todas"}
     opcoes_conteudo.update({cid: c["titulo"] for cid, c in st.session_state.conteudos.items()})
     opcoes_ids = list(opcoes_conteudo.keys())
 
-    # Lembra a última escolha no PRÓPRIO config_sistema.json, não só em session_state: session_state morre inteiro com um F5 de verdade (é uma sessão nova pro Streamlit), então guardar só na sessão fazia a escolha "sobreviver a trocar de aba" mas sumir de novo ao atualizar a página. meta_xp já é salvo em disco por esse mesmo arquivo; o foco escolhido segue o mesmo caminho.
-    #
-    # O widget usa key= e NÃO recebe index= — as duas coisas juntas foram a causa de um bug: trocar a escolha sem clicar Salvar fazia a seleção "oscilar", voltando pra anterior a cada segunda troca. Calcular index=... a partir de um valor que a MESMA rodada do script também escreve de volta em session_state cria uma corrida — o Streamlit não consegue distinguir com segurança "isso é o clique novo do usuário" de "isso é só o padrão que acabei de recalcular", e às vezes descarta o clique. Com key= só, o valor mora inteiramente em
-    # st.session_state[key] e o Streamlit cuida de tudo sozinho, sem essa
-    # corrida — é o padrão mais robusto pra widget com estado.
+    """
+    A última escolha é salva no próprio config_sistema.json, e não só em session_state, que é
+    perdido a cada F5 (sessão nova). meta_xp já é salvo em disco por esse arquivo; o foco escolhido
+    segue o mesmo caminho.
+
+    O widget usa key= e não recebe index=: calcular index= a partir de um valor que a mesma execução
+    do script reescreve em session_state cria uma corrida, e o Streamlit pode descartar o clique do
+    usuário (a seleção oscilava). Com key= apenas, o valor fica em st.session_state[key] e o
+    Streamlit o gerencia sozinho.
+    """
     if "meta_xp_foco_selecionado" not in st.session_state:
         st.session_state["meta_xp_foco_selecionado"] = st.session_state.config.get("ultimo_foco_meta_xp", "__catalogo__")
     if st.session_state["meta_xp_foco_selecionado"] not in opcoes_ids:
@@ -87,7 +96,11 @@ def render_configuracoes():
         st.caption(f"💡 \"{opcoes_conteudo[conteudo_foco]}\" vale até **{xp_referencia} XP** — já preenchido abaixo. Reduza se quiser uma meta mais fácil.")
         valor_padrao_meta = xp_referencia
 
-    # key inclui o conteúdo escolhido de propósito: assim, trocar a escolha no seletor acima cria um widget "novo" pro Streamlit, que preenche de novo com valor_padrao_meta — sem isso, o campo manteria o número digitado antes mesmo depois de trocar de conteúdo (o campo preenche sozinho a cada troca, e continua editável para uma meta menor que o total).
+    """
+    A key inclui o conteúdo escolhido de propósito: trocar a escolha cria um widget novo, que
+    preenche de novo com valor_padrao_meta, em vez de manter o número digitado antes. O campo
+    continua editável para uma meta menor que o total.
+    """
     with st.form("form_meta_xp"):
         meta_xp_input = st.number_input(
             "Meta de XP",
