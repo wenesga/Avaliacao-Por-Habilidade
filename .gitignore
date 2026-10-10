@@ -12,3 +12,7 @@ banco_alunos.json*
 # PDFs da BNCC usados pelo gerador (baixar do site do MEC)
 arquivos/*.pdf
 arquivos/*.txt
+
+# Instrucoes locais para assistentes de IA (nao publicar)
+CLAUDE.md
+.claude/
