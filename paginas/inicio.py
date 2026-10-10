@@ -8,7 +8,6 @@ from estilo import obter_logo_base64
 from sessao import ir_para_materia
 
 
-# 6. PÁGINA INICIAL (BANNER + ATALHOS)
 @st.fragment(run_every="5s")
 def render_placar_turma():
     """
@@ -64,10 +63,6 @@ def renderizar_grade_cartoes(cartoes, prefixo_key):
             cor = PALETA_CORES_CARTAO[idx_global % len(PALETA_CORES_CARTAO)]
             with colunas[i]:
                 with st.container(border=True, key=f"{prefixo_key}_cartao_{idx_global}_cor_{cor}"):
-                    """
-                    Progresso na mesma linha do título, como texto simples (padrão do menu lateral,
-                    "📊 Estatística · 1/44"), para não deixar o card mais alto.
-                    """
                     titulo_linha = f"#### {cartao['icone']} {cartao['titulo']}"
                     if cartao.get("progresso"):
                         titulo_linha += f"  ·  {cartao['progresso']}"
@@ -93,10 +88,6 @@ def render_pagina_inicial():
         logo_html = '<div class="home-banner-logo">🎓</div>'
 
     if os.path.exists(ARQUIVO_BANNER):
-        """
-        Arte pronta (static/banner.jpg, com a metade esquerda livre) como fundo; o título vai por
-        cima em HTML.
-        """
         st.markdown(
             f'''
             <div class="home-banner-arte" style="background-image: url('app/{ARQUIVO_BANNER}')">

@@ -19,10 +19,6 @@ def calcular_xp_por_desempenho(pontos_base, erros_nesta_missao):
 
 
 def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, pontos, tipo="numero"):
-    """
-    Rótulo curto no botão: o cabeçalho "### 📍 Questão N: ..." acima já indica a questão, então o
-    botão não repete o número. O mesmo padrão é usado nos botões do Painel do Professor.
-    """
     if st.button("Verificar Resposta", key=f"btn_{conteudo_id}_{missao_id}"):
         if resposta_aluno is None or str(resposta_aluno).strip() == "":
             st.error("⚠️ Escolha uma alternativa antes de verificar!" if tipo == "multipla"

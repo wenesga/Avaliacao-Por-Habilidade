@@ -474,8 +474,4 @@ def progresso_resumo_aluno():
         ).fetchall()
     finally:
         conn.close()
-    """
-    missao_atual aponta para a próxima questão a responder (começa em 1), então o que já foi
-    concluído é sempre missao_atual - 1.
-    """
     return {linha["conteudo_id"]: max(linha["missao_atual"] - 1, 0) for linha in linhas}

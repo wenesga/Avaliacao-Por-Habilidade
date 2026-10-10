@@ -21,9 +21,6 @@ def obter_logo_base64():
 def aplicar_estilo():
     st.markdown("""
 <style>
-    /* Limita a largura do conteúdo principal e o centraliza em monitores grandes. Não afeta a barra
-       lateral (largura fixa). Reduz o padding interno padrão do Streamlit para sobrar mais espaço
-       dentro do limite. */
     .stMainBlockContainer {
         max-width: 870px;
         padding-left: 2rem;
@@ -58,8 +55,6 @@ def aplicar_estilo():
     .gamification-box { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 15px 20px; border-radius: 10px; font-size: 16px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
     /* Regra sem uso no app (.gamification-box); pode ser removida. */
 
-    /* Selo de XP acima da Avaliação. Usa gradiente opaco e texto branco (mesma técnica de
-       .home-banner), e não rgba() semitransparente, para se destacar do tema como um emblema. */
     .xp-destaque-missoes {
         display: inline-flex;
         align-items: center;
@@ -74,7 +69,6 @@ def aplicar_estilo():
     .xp-destaque-missoes .icone { font-size: 22px; }
     .xp-destaque-missoes .valor { font-size: 19px; font-weight: 700; letter-spacing: 0.01em; }
 
-    /* Banner da página inicial */
     .home-banner {
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 60%, #60a5fa 100%);
         color: white;
@@ -113,8 +107,6 @@ def aplicar_estilo():
         padding: 18px; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         margin-bottom: 16px;
     }
-    /* Placar da turma: mesma técnica dos cartões da home (rgba() sobre o fundo, sem "color" fixo),
-       para funcionar nos dois temas. */
     .placar-caixa {
         border: 1px solid rgba(148, 163, 184, 0.4);
         border-radius: 12px;
@@ -140,7 +132,7 @@ def aplicar_estilo():
     }
     .placar-nome { flex: 1; font-size: 16px; }
     .placar-xp {
-        font-variant-numeric: tabular-nums;  /* números alinhados entre as linhas */
+        font-variant-numeric: tabular-nums;  
         font-weight: 700;
         color: #16a34a;
     }
@@ -159,9 +151,6 @@ def aplicar_estilo():
         height: 100%;
     }
 
-    /* Cores suaves dos cartões de "Conteúdos disponíveis" (ver PALETA_CORES_CARTAO e a key
-       "cartao_..._cor_X" de st.container). Usa rgba() de baixa opacidade para funcionar nos dois
-       temas. */
     [class*="_cor_azul"]    { background-color: rgba(59, 130, 246, 0.12) !important; border-color: rgba(59, 130, 246, 0.4) !important; }
     [class*="_cor_roxo"]    { background-color: rgba(168, 85, 247, 0.12) !important; border-color: rgba(168, 85, 247, 0.4) !important; }
     [class*="_cor_rosa"]    { background-color: rgba(236, 72, 153, 0.12) !important; border-color: rgba(236, 72, 153, 0.4) !important; }
@@ -169,23 +158,16 @@ def aplicar_estilo():
     [class*="_cor_verde"]   { background-color: rgba(16, 185, 129, 0.12) !important; border-color: rgba(16, 185, 129, 0.4) !important; }
     [class*="_cor_ciano"]   { background-color: rgba(6, 182, 212, 0.12) !important; border-color: rgba(6, 182, 212, 0.4) !important; }
 
-    /* Título dos painéis expansíveis (st.expander) um pouco maior, igual para conteúdo estático e
-       dinâmico (mesmo componente). */
     div[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p {
         font-size: 20px !important;
         font-weight: 600 !important;
     }
 
-    /* Título principal de cada página (st.title, h1): reduzido do padrão do Streamlit (44px) para
-       combinar com os títulos de seção da home (28px/600 via h3), mantendo a mesma hierarquia em
-       todas as páginas. O line-height é relativo (em) e acompanha o font-size. */
     h1 {
         font-size: 28px !important;
         font-weight: 600 !important;
     }
 
-    /* Título dos cartões de "Conteúdos disponíveis" (h4): 17px/700, igual ao de .home-step-titulo.
-       Limitado a esses cartões via [class*="_cor_"] para não afetar outros h4 do app. */
     [class*="_cor_"] h4 {
         font-size: 17px !important;
         font-weight: 700 !important;
@@ -205,16 +187,10 @@ def aplicar_estilo():
         height: 100%;
     }
 
-    /* Cada conteúdo cadastrado (Gerenciar Conteúdos) é um st.container(border=True): cartão com
-       borda e cantos arredondados, com estilo próprio do painel do professor, diferente do card do
-       aluno na Início. */
     div[class*="st-key-card_conteudo_"] {
         margin-bottom: 12px;
     }
 
-    /* Badges (pílulas) dentro do cartão: resumo do tipo/quantidade de
-       questões e do descritor mapeado, visível sem precisar abrir
-       "Editar". */
     .badge-conteudo {
         display: inline-block;
         padding: 5px 14px;
@@ -232,9 +208,6 @@ def aplicar_estilo():
         color: #047857;
     }
 
-    /* Cards suaves dos 3 totais de XP em Configurações (Matéria Padrão / Matérias Cadastradas /
-       Total do catálogo), no lugar de st.metric(). Reaproveitam as cores dos badges de card (índigo
-       do tipo, verde do descritor) e um tom neutro para o total, que é a soma dos outros dois. */
     .resumo-xp-card {
         border-radius: 12px;
         padding: 14px 16px;
@@ -289,9 +262,6 @@ def aplicar_estilo():
         pointer-events: none;
     }
 
-    /* Botões "Editar"/"Excluir" de cada conteúdo cadastrado: as colunas do st.columns(2) encolhem
-       para o tamanho do botão (flex: 0 0 auto), deixando o par junto e alinhado à direita, só
-       dentro do key deste container. */
     div[class*="st-key-acoes_conteudo_"] div[data-testid="stHorizontalBlock"] {
         gap: 8px !important;
         justify-content: flex-end;
@@ -335,8 +305,6 @@ def aplicar_estilo():
         margin-top: -19px;
     }
 
-    /* Menu lateral: botões colados, alinhados à esquerda,
-       com destaque visual para o item ativo e hover suave no restante. */
     div[data-testid="stSidebar"] button {
         margin-bottom: 4px;
         text-align: left;
@@ -367,15 +335,10 @@ def aplicar_estilo():
         border-color: #b91c1c;
     }
 
-    /* Cartões dos conteúdos (Gerenciar Conteúdos): fundo cinza suave, pra separar um
-       do outro. Transparência, pra valer no tema claro e no escuro. */
     div[class*="st-key-card_conteudo_"] {
         background-color: rgba(128, 128, 128, 0.06);
     }
 
-    /* Abas do Detalhamento por Conteúdo: formato de aba de navegador. A aba
-       ativa leva o azul do tema (traço no topo e fundo azulado); as outras ficam
-       cinza discretas. Cores com transparência, pra valer no tema claro e no escuro. */
     div[role="tablist"] {
         gap: 4px;
         border-bottom: 1px solid rgba(128, 128, 128, 0.35);
@@ -401,10 +364,6 @@ def aplicar_estilo():
         font-weight: 600;
     }
 
-    /* Barrinha na borda esquerda dos itens do menu: diferencia "Matéria Padrão" (roxo/azul) de
-       "Matérias Cadastradas" (verde) em repouso, sem pintar o botão inteiro. Usa as cores dos
-       badges do Painel do Professor (.badge-conteudo-tipo / .badge-conteudo-descritor). Some quando
-       o botão está ativo (kind="primary", já azul). */
     div[class*="st-key-nav_conteudo_"] button[kind="secondary"] {
         border-left: 3px solid #10b981;
     }
@@ -436,9 +395,6 @@ def aplicar_estilo():
         opacity: 1;
     }
 
-    /* Rótulo do grupo "Matérias": cabeçalho do nível 2 da navegação, não clicável. Menor, em caixa
-       alta e apagado para não competir com os botões (Início e Painel do Professor são nível 1, sem
-       rótulo). */
     .sidebar-secao {
         font-size: 11px;
         font-weight: 700;
@@ -448,8 +404,6 @@ def aplicar_estilo():
         margin: 4px 0 6px 4px;
     }
 
-    /* "Matérias Cadastradas" fica um pouco mais afastada do botão de cima ("📊 Estatística") que o
-       espaçamento padrão de .sidebar-secao, marcando o início de um novo grupo. */
     .sidebar-secao-espacada {
         margin-top: 16px;
     }
@@ -472,7 +426,6 @@ def aplicar_estilo():
         margin: 8px 4px 24px 4px !important;
     }
 
-    /* Cabeçalho da barra lateral: logo em cima e título embaixo, ambos centralizados. */
     div[class*="st-key-sidebar_cabecalho"] {
         display: flex;
         flex-direction: column;

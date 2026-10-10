@@ -41,17 +41,12 @@ ARQUIVO_CONTEUDOS = os.path.join(DIR_DADOS, "conteudos.json")             # cont
 ARQUIVO_CONFIG = os.path.join(DIR_DADOS, "config_sistema.json")           # configurações gerais (senha do professor)
 
 
-                                                 # ARQUIVO_LOGO, ARQUIVO_BANNER e ARQUIVO_CABECALHO ficam no topo, antes de st.set_page_config().
 
-"""
-Senha inicial do Painel do Professor. Pode ser trocada no próprio painel, em Configurações.
-"""
 SENHA_PADRAO_PROFESSOR = "computa258"
 
 
 """
-Paleta de cores suaves para destacar os cartões de conteúdo do fundo, em tema claro e escuro (ver
-CSS .cartao-cor-*). É usada em ciclo conforme novos conteúdos são cadastrados.
+Cores suaves dos cartões de conteúdo, usadas em ciclo (ver CSS .cartao-cor-*).
 """
 PALETA_CORES_CARTAO = ["azul", "roxo", "rosa", "amarelo", "verde", "ciano"]
 
