@@ -27,9 +27,8 @@ def xp_maximo_de_conteudo(cid, c):
     """XP máximo de UM conteúdo específico, acertando tudo de primeira —
     cadastrado pelo professor (soma o "Pontos (XP)" de cada questão dele). Usado tanto pro badge "Total X XP" em cada card
     (Painel do Professor > Gerenciar Conteúdos) quanto pro seletor de
-    "Meta de XP" em Configurações — pedido do Wenes (2026-09-17) e sugestão
-    parecida do orientador (ver "Conversar com orientador 02.txt": escolher
-    a disciplina, mostrar o XP dela, definir a meta como % disso)."""
+    "Meta de XP" em Configurações (escolher a disciplina, mostrar o XP dela e
+    definir a meta como porcentagem desse total)."""
     return sum(m.get("pontos", 10) for m in c.get("missoes", []))
 
 

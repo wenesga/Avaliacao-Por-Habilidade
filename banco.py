@@ -11,12 +11,7 @@ from descritores import obter_descritor_missao
 
 
 # ---------- Banco de alunos (SQLite) ----------
-# Trocado de JSON pra SQLite porque, numa aula de verdade, vários alunos
-# respondem questões ao mesmo tempo. O jeito antigo lia o arquivo inteiro,
-# mudava um pedaço e regravava o arquivo inteiro — se dois alunos salvassem
-# quase juntos, o segundo podia sobrescrever e apagar o progresso do
-# primeiro. Com SQLite, cada aluno grava só a própria linha (UPDATE/INSERT
-# pontual), então um não pisa no dado do outro.
+# Trocado de JSON pra SQLite porque, numa aula de verdade, vários alunos respondem questões ao mesmo tempo. O jeito antigo lia o arquivo inteiro, mudava um pedaço e regravava o arquivo inteiro — se dois alunos salvassem quase juntos, o segundo podia sobrescrever e apagar o progresso do primeiro. Com SQLite, cada aluno grava só a própria linha (UPDATE/INSERT pontual), então um não pisa no dado do outro.
 def perfil_padrao():
     return {"xp_total": 0, "progresso": {}, "inicio_sessao": time.time()}
 
@@ -53,47 +48,25 @@ def inicializar_banco_db():
                 PRIMARY KEY (aluno, conteudo_id)
             )
         """)
-        # "erros" (acima) é o total do conteúdo inteiro, usado no relatório do
-        # professor. "erros_missao_atual" é zerado a cada vez que o aluno avança
-        # de questão — é o que alimenta o desconto de XP por tentativa (ver
-        # calcular_xp_por_desempenho): sem separar os dois, não teria como saber
-        # quantas vezes o aluno errou NA QUESTÃO ATUAL antes de acertar.
+        # "erros" (acima) é o total do conteúdo inteiro, usado no relatório do professor. "erros_missao_atual" é zerado a cada vez que o aluno avança de questão — é o que alimenta o desconto de XP por tentativa (ver calcular_xp_por_desempenho): sem separar os dois, não teria como saber quantas vezes o aluno errou NA QUESTÃO ATUAL antes de acertar.
         colunas_progresso = {row["name"] for row in conn.execute("PRAGMA table_info(progresso)")}
         if "erros_missao_atual" not in colunas_progresso:
             conn.execute("ALTER TABLE progresso ADD COLUMN erros_missao_atual INTEGER NOT NULL DEFAULT 0")
-        # "respostas" guarda {"1": "8", "2": "61.7", ...} — a resposta que o
-        # aluno deu em cada questão já concluída. Faltava desde o começo: só
-        # ficava em st.session_state (memória da sessão do navegador), nunca
-        # no banco. "missao_atual" sim é salvo, então o aluno reabrindo o
-        # app noutra sessão continuava exatamente de onde parou, mas as
-        # linhas "✅ Questão N Concluída! (Resposta: ...)" das questões
-        # anteriores apareciam com "None" — a sessão nova nunca teve aquele
-        # valor em memória (bug relatado pelo Wenes, 2026-09-14).
+        # "respostas" guarda {"1": "8", "2": "61.7", ...} — a resposta que o aluno deu em cada questão já concluída. Faltava desde o começo: só ficava em st.session_state (memória da sessão do navegador), nunca no banco. "missao_atual" sim é salvo, então o aluno reabrindo o app noutra sessão continuava exatamente de onde parou, mas as linhas "✅ Questão N Concluída! (Resposta: ...)" das questões anteriores apareciam com "None" — a sessão nova nunca teve aquele valor em memória.
         if "respostas" not in colunas_progresso:
             conn.execute("ALTER TABLE progresso ADD COLUMN respostas TEXT NOT NULL DEFAULT '{}'")
-        # Nome que o professor quer ver NO RELATÓRIO ("João Batista"), separado
-        # do "nome" com que o aluno faz login ("Goku99", "Player1"). São coisas
-        # diferentes de propósito: "nome" é chave primária e liga o aluno ao
-        # progresso dele, então renomear quebraria o vínculo — no próximo login
-        # o aluno cairia num perfil vazio e perderia o XP. Esta coluna é só
-        # exibição, nunca é usada pra buscar nada.
+        # Nome que o professor quer ver NO RELATÓRIO ("João Batista"), separado do "nome" com que o aluno faz login ("Goku99", "Player1"). São coisas diferentes de propósito: "nome" é chave primária e liga o aluno ao progresso dele, então renomear quebraria o vínculo — no próximo login o aluno cairia num perfil vazio e perderia o XP. Esta coluna é só exibição, nunca é usada pra buscar nada.
         colunas_alunos = {row["name"] for row in conn.execute("PRAGMA table_info(alunos)")}
         if "nome_relatorio" not in colunas_alunos:
             conn.execute("ALTER TABLE alunos ADD COLUMN nome_relatorio TEXT NOT NULL DEFAULT ''")
-        # Contador de acessos: uma linha por dia com quantas vezes o app foi
-        # aberto (cada sessão nova do navegador conta uma vez). Só o número:
-        # não guarda IP, aparelho nem quem abriu.
+        # Contador de acessos: uma linha por dia com quantas vezes o app foi aberto (cada sessão nova do navegador conta uma vez). Só o número: não guarda IP, aparelho nem quem abriu.
         conn.execute("""
             CREATE TABLE IF NOT EXISTS acessos (
                 dia TEXT PRIMARY KEY,
                 total INTEGER NOT NULL DEFAULT 0
             )
         """)
-        # Uma linha por TENTATIVA de resposta (acerto ou erro). É daqui que sai o
-        # "acerto por aluno em cada habilidade" do Painel do Professor: o campo
-        # "missao_atual" só diz até onde o aluno chegou, não quanto ele acertou.
-        # Só passa a existir a partir da primeira resposta depois desta versão:
-        # o histórico antigo não guardava o resultado de cada questão.
+        # Uma linha por TENTATIVA de resposta (acerto ou erro). É daqui que sai o "acerto por aluno em cada habilidade" do Painel do Professor: o campo "missao_atual" só diz até onde o aluno chegou, não quanto ele acertou. Só passa a existir a partir da primeira resposta depois desta versão: o histórico antigo não guardava o resultado de cada questão.
         conn.execute("""
             CREATE TABLE IF NOT EXISTS tentativas_missao (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -248,13 +221,7 @@ def progresso_atual(conteudo_id=None):
         if row is None:
             return progresso_padrao()
         respostas = json.loads(row["respostas"]) if row["respostas"] else {}
-        # Recoloca as respostas salvas em st.session_state: é de lá que todo
-        # "✅ Questão N Concluída! (Resposta: ...)" já espalhado pelo código
-        # lê o valor (ver verificar_resposta) — sem essa "hidratação" aqui,
-        # cada um desses 40+ pontos de exibição precisaria ser reescrito pra
-        # ler de outro lugar. Só preenche o que ainda não está em memória
-        # (não pisa numa resposta desta MESMA sessão, mais recente que a
-        # gravada no banco no meio de uma questão em andamento).
+        # Recoloca as respostas salvas em st.session_state: é de lá que todo "✅ Questão N Concluída! (Resposta: ...)" já espalhado pelo código lê o valor (ver verificar_resposta) — sem essa "hidratação" aqui, cada um desses 40+ pontos de exibição precisaria ser reescrito pra ler de outro lugar. Só preenche o que ainda não está em memória (não pisa numa resposta desta MESMA sessão, mais recente que a gravada no banco no meio de uma questão em andamento).
         for idx_str, resp in respostas.items():
             chave = f"m_{conteudo_id}_{idx_str}"
             if chave not in st.session_state:
@@ -400,8 +367,7 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
         return acertos, desde
     primeiras = set()
     for linha in linhas:
-        # A primeira tentativa é decidida antes dos filtros: se o filtro de período
-        # cortasse a primeira, as seguintes não podem passar por primeira.
+        # A primeira tentativa é decidida antes dos filtros: se o filtro de período cortasse a primeira, as seguintes não podem passar por primeira.
         chave = (linha["aluno"], linha["conteudo_id"], linha["missao"])
         if chave in primeiras:
             continue
@@ -475,6 +441,5 @@ def progresso_resumo_aluno():
         ).fetchall()
     finally:
         conn.close()
-    # missao_atual aponta pra PRÓXIMA questão a responder (começa em 1), então o
-    # que já foi concluído é sempre missao_atual - 1.
+    # missao_atual aponta pra PRÓXIMA questão a responder (começa em 1), então o que já foi concluído é sempre missao_atual - 1.
     return {linha["conteudo_id"]: max(linha["missao_atual"] - 1, 0) for linha in linhas}

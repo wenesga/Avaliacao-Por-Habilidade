@@ -19,11 +19,7 @@ def calcular_xp_por_desempenho(pontos_base, erros_nesta_missao):
 
 
 def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, pontos, tipo="numero"):
-    # Rótulo curto: o cabeçalho "### 📍 Questão N: ..." logo acima já diz qual
-    # questão é — repetir "da Questão N" no botão era informação redundante
-    # (mesmo padrão de simplificação pedido pelo Wenes em 2026-09-14 pros
-    # botões do Painel do Professor, aplicado aqui porque este é o botão de
-    # questão que aparece em TODO conteúdo do app, nativo ou cadastrado).
+    # Rótulo curto: o cabeçalho "### 📍 Questão N: ..." logo acima já diz qual questão é — repetir "da Questão N" no botão era informação redundante (mesmo padrão de simplificação usado nos botões do Painel do Professor, aplicado aqui porque este é o botão de questão que aparece em TODO conteúdo do app, nativo ou cadastrado).
     if st.button("Verificar Resposta", key=f"btn_{conteudo_id}_{missao_id}"):
         if resposta_aluno is None or str(resposta_aluno).strip() == "":
             st.error("⚠️ Escolha uma alternativa antes de verificar!" if tipo == "multipla"
@@ -32,11 +28,7 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
 
         acertou = False
         if tipo == "multipla":
-            # Comparação exata: o aluno não digita nada, apenas escolhe uma das
-            # alternativas cadastradas, então os dois lados vêm do mesmo texto.
-            # É justamente isso que a múltipla escolha resolve — em resposta
-            # digitada, "media" e "média" são strings diferentes e o aluno perde
-            # o ponto por causa do acento, não por causa do conteúdo.
+            # Comparação exata: o aluno não digita nada, apenas escolhe uma das alternativas cadastradas, então os dois lados vêm do mesmo texto. É justamente isso que a múltipla escolha resolve — em resposta digitada, "media" e "média" são strings diferentes e o aluno perde o ponto por causa do acento, não por causa do conteúdo.
             acertou = str(resposta_aluno).strip() == str(resposta_certa).strip()
         elif tipo == "numero":
             try:
@@ -69,23 +61,12 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
                 mensagem = f"🎉 Correto! +{xp_ganho} XP de {pontos} XP (descontado pelas tentativas)"
             else:
                 mensagem = f"🎉 Correto! +{xp_ganho} XP!"
-            # Guardado em session_state em vez de um st.success() mostrado
-            # aqui na hora: o st.rerun() logo abaixo troca a tela quase
-            # instantaneamente, e a mensagem só ficava visível por uma fração
-            # de segundo — sem tempo de leitura nenhum (relatado pelo Wenes,
-            # 2026-09-14: não dava tempo de ler nem tirando
-            # print). Quem desenha esse texto na tela, de forma PERSISTENTE
-            # (sem sumir sozinha), é renderizar_ultimo_resultado(), chamada
-            # embaixo de tudo na aba Questões (perto de onde o aluno clicou).
+            # Guardado em session_state em vez de um st.success() mostrado aqui na hora: o st.rerun() logo abaixo troca a tela quase instantaneamente, e a mensagem só ficava visível por uma fração de segundo — sem tempo de leitura nenhum. Quem desenha esse texto na tela, de forma PERSISTENTE (sem sumir sozinha), é renderizar_ultimo_resultado(), chamada embaixo de tudo na aba Questões (perto de onde o aluno clicou).
             st.session_state[f"ultimo_resultado_{conteudo_id}"] = mensagem
             perfil["xp_total"] = perfil.get("xp_total", 0) + xp_ganho
             prog["historico"].append(f"✅ Questão {missao_id} concluída. Resposta: `{resposta_aluno}` (+{xp_ganho} XP)")
             st.session_state[f"m_{conteudo_id}_{missao_id}"] = resposta_aluno
-            # Guarda TAMBÉM no banco (prog["respostas"], persistido por
-            # salvar_perfil_e_progresso): o session_state acima é só desta
-            # aba do navegador, some numa sessão nova. Sem isso, quem volta
-            # depois via outra sessão via as questões já feitas mostrando
-            # "(Resposta: None)" — bug relatado pelo Wenes (2026-09-14).
+            # Guarda TAMBÉM no banco (prog["respostas"], persistido por salvar_perfil_e_progresso): o session_state acima é só desta aba do navegador, some numa sessão nova. Sem isso, quem volta depois via outra sessão via as questões já feitas mostrando "(Resposta: None)".
             prog.setdefault("respostas", {})[str(missao_id)] = resposta_aluno
             # missao_atual = questões concluídas + 1: é o número que o resto do sistema
             # usa para contar progresso, e agora não depende mais da ordem das questões.
@@ -96,12 +77,7 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
         else:
             prog["erros"] = prog.get("erros", 0) + 1
             salvar_perfil_e_progresso(nome_aluno, conteudo_id, perfil, prog)
-            # Limpa o "🎉 Correto!" da questão anterior: sem isso, ele ficava
-            # em session_state pra sempre (só é sobrescrito num ACERTO) e
-            # aparecia junto do "❌ Resposta incorreta" da tentativa atual —
-            # as duas mensagens empilhadas, tumultuado (relatado pelo Wenes,
-            # 2026-09-14). Errar tem que apagar o acerto de antes, não só
-            # somar mais uma mensagem em cima.
+            # Limpa o "🎉 Correto!" da questão anterior: sem isso, ele ficava em session_state pra sempre (só é sobrescrito num ACERTO) e aparecia junto do "❌ Resposta incorreta" da tentativa atual — as duas mensagens empilhadas, tumultuado. Errar tem que apagar o acerto de antes, não só somar mais uma mensagem em cima.
             st.session_state.pop(f"ultimo_resultado_{conteudo_id}", None)
             st.error("❌ Resposta incorreta. Revise o conteúdo e tente de novo!")
 
@@ -133,8 +109,7 @@ def render_missoes_dinamicas(conteudo):
             tipo = missao.get("tipo", "numero")
             if tipo == "multipla":
                 # index=None deixa a questão começar SEM alternativa marcada. Com a
-                # primeira já selecionada, o aluno poderia clicar em "Verificar"
-                # sem ter escolhido nada e levar um erro que não foi escolha dele.
+                # primeira já selecionada, o aluno poderia clicar em "Verificar" sem ter escolhido nada e levar um erro que não foi escolha dele.
                 resposta = st.radio(
                     "Escolha uma alternativa:", missao.get("alternativas", []),
                     index=None, key=f"in_{cid}_{idx}",

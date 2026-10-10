@@ -1,9 +1,6 @@
 """As 4 faixas de desempenho da escola (modelo SAEB/SAETO) e as cores de cada uma."""
 
-# (nome, limite superior em %, cor forte, fundo suave da célula, bolinha da legenda).
-# Até 40% Baixo, 41–60% Médio baixo, 61–79% Médio alto, 80% ou mais Alto.
-# O PDF do SAETO chama de "Médio alto" um descritor com 80% em uma tabela, mas a
-# legenda da primeira página diz que 80% ou mais é "Alto": aqui vale a legenda.
+# (nome, limite superior em %, cor forte, fundo suave da célula, bolinha da legenda). Até 40% Baixo, 41–60% Médio baixo, 61–79% Médio alto, 80% ou mais Alto. O PDF do SAETO chama de "Médio alto" um descritor com 80% em uma tabela, mas a legenda da primeira página diz que 80% ou mais é "Alto": aqui vale a legenda.
 FAIXAS = [
     ("Baixo",       40,  "#e74c3c", "#f6c9c4", "🔴"),
     ("Médio baixo", 60,  "#e67e22", "#fbd9b5", "🟠"),

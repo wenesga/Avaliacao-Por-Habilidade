@@ -109,7 +109,7 @@ def _injetar_aviso_saida():
     """Aviso nativo do navegador ('Sair do site? Alterações podem não ser
     salvas') antes de fechar a aba, atualizar ou navegar pra fora.
 
-    Esse app é uma SPA (single page application, ver conversa de 2026-09-03):
+    Esse app é uma SPA (single page application):
     tudo acontece dentro de uma única página carregada, trocando de conteúdo
     via WebSocket — nunca existe uma "página anterior" de verdade. Por isso
     o botão Voltar do navegador não tem pra onde voltar dentro do app, e sai
@@ -179,9 +179,8 @@ def _injetar_liberar_scroll_grafico():
 
 def _injetar_clique_logo_inicio():
     """Faz a LOGO (imagem) também levar pra Início ao clicar, não só o texto
-    "Trilha de Aprendizagem" ao lado — pedido do Wenes (2026-09-13): pra ele
-    logo+título são "um objeto só" (é assim que funciona em praticamente todo
-    site/app), então clicar em qualquer parte tem que navegar.
+    "Trilha de Aprendizagem" ao lado: logo e título formam um único elemento
+    visual, então clicar em qualquer parte tem que navegar.
 
     st.image() não tem on_click nem aceita link. A solução é ouvir clique em
     qualquer lugar dentro do cabeçalho (".st-key-sidebar_cabecalho") e, se não

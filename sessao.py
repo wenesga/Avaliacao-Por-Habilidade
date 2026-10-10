@@ -13,9 +13,7 @@ def inicializar_estado():
     if 'config' not in st.session_state: st.session_state.config = carregar_config()
     if 'aluno_ativo' not in st.session_state: st.session_state.aluno_ativo = ""
     if 'conteudo_ativo' not in st.session_state: st.session_state.conteudo_ativo = ""
-    # Guardamos o INSTANTE EM QUE A SESSÃO EXPIRA, não um booleano "está logado":
-    # com o booleano, ficar autenticado era um estado sem prazo nenhum, que só
-    # terminava se alguém lembrasse de clicar em "Sair do Painel". 0.0 = sem sessão.
+    # Guardamos o INSTANTE EM QUE A SESSÃO EXPIRA, não um booleano "está logado": com o booleano, ficar autenticado era um estado sem prazo nenhum, que só terminava se alguém lembrasse de clicar em "Sair do Painel". 0.0 = sem sessão.
     if 'professor_auth_expira_em' not in st.session_state: st.session_state.professor_auth_expira_em = 0.0
     if 'pagina' not in st.session_state: st.session_state.pagina = PAGINA_INICIO
     if 'aba_materia' not in st.session_state: st.session_state.aba_materia = ABA_TEORIA
@@ -99,8 +97,8 @@ def renderizar_flash_pendente():
     """Mostra (e consome) a mensagem guardada por flash(), se tiver alguma,
     como um card fixo no canto superior direito — não precisa rolar a tela
     pra ver, ao contrário de um st.success() desenhado no meio do formulário
-    (bug relatado pelo Wenes, 2026-09-17: editou um conteúdo longo, salvou, e
-    a mensagem ficou fora da tela, lá em cima). st.toast() faria a mesma
+    (caso típico: editar um conteúdo longo, salvar, e a mensagem ficar
+    fora da tela, lá em cima). st.toast() faria a mesma
     coisa nativamente, mas parou de funcionar neste ambiente."""
     mensagem = st.session_state.pop("_flash_pendente", None)
     if mensagem:

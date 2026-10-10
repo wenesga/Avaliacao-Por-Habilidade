@@ -20,8 +20,8 @@ def hex_para_rgb(cor_hex):
 
 class _PDFComCabecalho(FPDF):
     """FPDF que desenha o timbre institucional (ARQUIVO_CABECALHO) só no topo
-    da PRIMEIRA página do relatório (decisão do Wenes, 2026-09-20: as demais
-    páginas ficam com o espaço todo para tabelas e gráficos).
+    da PRIMEIRA página do relatório (as demais páginas ficam com o espaço
+    todo para tabelas e gráficos).
 
     Continua sendo via header() e não um pdf.image() solto depois do
     add_page(): assim a primeira página sempre leva o timbre, e o fpdf2 cuida
@@ -37,9 +37,7 @@ class _PDFComCabecalho(FPDF):
         largura = self.w - self.l_margin - self.r_margin
         self.image(ARQUIVO_CABECALHO, x=self.l_margin, y=10, w=largura)
         # pdf.image() não move o cursor no fpdf2, então o Y de onde o conteúdo
-        # começa tem que ser calculado: a altura vem da proporção real do
-        # arquivo (lida com PIL, não chutada — trocar a arte por uma de outra
-        # proporção continua funcionando sem mexer no código).
+        # começa tem que ser calculado: a altura vem da proporção real do arquivo (lida com PIL, não chutada — trocar a arte por uma de outra proporção continua funcionando sem mexer no código).
         with Image.open(ARQUIVO_CABECALHO) as img:
             altura = largura * img.height / img.width
         self.set_y(10 + altura + 6)
@@ -86,8 +84,8 @@ LARGURA_ROTULO_CABECALHO_PDF = 32  # mm — cabe "Professor(a):" em negrito 10pt
 def _linha_dado_pdf(pdf, rotulo, valor):
     """Uma linha 'Rótulo: valor' alinhada à esquerda — rótulo em negrito com
     largura fixa, pra várias linhas seguidas alinharem o valor na mesma
-    coluna (padrão que o Wenes já usa nos documentos curtos de outras
-    disciplinas: Acadêmico / Curso / Disciplina / Professor / Data)."""
+    coluna (formato de documentos curtos: Acadêmico / Curso / Disciplina /
+    Professor / Data)."""
     pdf.set_font("CMU", 'B', 10)
     pdf.cell(LARGURA_ROTULO_CABECALHO_PDF, 6, text=f"{rotulo}:", align='L')
     pdf.set_font("CMU", '', 10)
@@ -108,7 +106,7 @@ def _grafico_barras_pdf(pdf, titulo, itens, x_tabela, largura_tabela):
 
     itens: lista de (rótulo, fração 0-1 da barra, texto do valor, cor hex).
 
-    Regras de página (pedido do Wenes, 2026-09-20):
+    Regras de página:
     - cabe no espaço que sobrou na página: fica onde está;
     - não cabe: começa numa página nova, e o gráfico ocupa só a(s) página(s)
       dele (quem chamou deve abrir outra página antes do próximo conteúdo);
@@ -201,9 +199,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     largura_util = pdf.w - pdf.l_margin - pdf.r_margin  # 170mm em A4 com margens de 20mm
 
     # --- Dados do relatório (Instituição/Professor/Turma opcionais, Data sempre) ---
-    # Rótulo em negrito + dois pontos, alinhado à esquerda (pedido do Wenes,
-    # 2026-09-07) — é o padrão que ele já usa em documentos curtos de outras
-    # disciplinas. Substituiu o bloco centralizado que tinha antes.
+    # Rótulo em negrito + dois pontos, alinhado à esquerda, formato de documentos curtos. Substituiu o bloco centralizado que tinha antes.
     if nome_instituicao:
         _linha_dado_pdf(pdf, "Instituição", nome_instituicao)
     if nome_professor:
@@ -220,26 +216,10 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     pdf.ln(4)
 
     # --- Tabela 1: Desempenho da turma ---
-    # Tabelas mais estreitas que a largura útil e centralizadas na página (em
-    # vez de esticadas de margem a margem) — fica com cara de tabela de
-    # relatório/artigo, não de planilha crua. pdf.cell() com new_x="LMARGIN"
-    # sempre volta pra margem esquerda da página no fim da linha, então cada
-    # linha precisa reposicionar o X pro início da tabela centralizada de novo.
-    # A coluna "Nome no Relatório" só entra se ALGUÉM tiver preenchido: professor
-    # que não usa o recurso continua recebendo o PDF de 3 colunas de sempre, sem
-    # uma coluna vazia ocupando espaço. Quem preencheu só metade da turma recebe
-    # as células dos outros em branco, de propósito — dá pra completar à caneta
-    # depois de imprimir. As larguras abaixo somam os MESMOS 150mm nos dois
-    # casos: o espaço da coluna nova sai da folga das colunas numéricas (45mm
-    # pra escrever "175" era exagero), não das margens, que ficam intocadas.
+    # Tabelas mais estreitas que a largura útil e centralizadas na página (em vez de esticadas de margem a margem) — fica com cara de tabela de relatório/artigo, não de planilha crua. pdf.cell() com new_x="LMARGIN" sempre volta pra margem esquerda da página no fim da linha, então cada linha precisa reposicionar o X pro início da tabela centralizada de novo. A coluna "Nome no Relatório" só entra se ALGUÉM tiver preenchido: professor que não usa o recurso continua recebendo o PDF de 3 colunas de sempre, sem uma coluna vazia ocupando espaço. Quem preencheu só metade da turma recebe as células dos outros em branco, de propósito — dá pra completar à caneta depois de imprimir. As larguras abaixo somam os MESMOS 150mm nos dois casos: o espaço da coluna nova sai da folga das colunas numéricas (45mm pra escrever "175" era exagero), não das margens, que ficam intocadas.
     usar_nome_relatorio = any(str(l.get("Nome no Relatório", "")).strip() for l in lista_geral)
 
-    # COM a coluna de nome a tabela ocupa a largura útil inteira (170mm, ou seja,
-    # exatamente de margem a margem) — os 20mm que sobravam de cada lado vão
-    # todos pra coluna do nome, que passa de 52 pra 72mm e para de cortar nome
-    # completo. SEM a coluna de nome ficam os 150mm centralizados de sempre: com
-    # 3 colunas curtas, esticar de margem a margem deixaria a tabela com cara de
-    # planilha esticada, e aí a folga é proposital (ver comentário abaixo).
+    # COM a coluna de nome a tabela ocupa a largura útil inteira (170mm, ou seja, exatamente de margem a margem) — os 20mm que sobravam de cada lado vão todos pra coluna do nome, que passa de 52 pra 72mm e para de cortar nome completo. SEM a coluna de nome ficam os 150mm centralizados de sempre: com 3 colunas curtas, esticar de margem a margem deixaria a tabela com cara de planilha esticada, e aí a folga é proposital (ver comentário abaixo).
     largura_tabela1 = largura_util if usar_nome_relatorio else 150  # 38+72+30+30 | 60+45+45
     x_tabela1 = pdf.l_margin + (largura_util - largura_tabela1) / 2
     pdf.set_font("CMU", 'B', 13)
@@ -279,9 +259,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
         grafico_xp_isolado = _grafico_barras_pdf(pdf, "Gráfico de XP por Aluno", itens_xp, x_tabela1, largura_tabela1)
 
     # --- Tabela de habilidades (só se houver questão mapeada) ---
-    # Fica logo depois do Desempenho da Turma, ainda na primeira página quando
-    # cabe: é a tabela que responde "o que a turma aprendeu", enquanto as outras
-    # respondem "quanto cada aluno fez".
+    # Fica logo depois do Desempenho da Turma, ainda na primeira página quando cabe: é a tabela que responde "o que a turma aprendeu", enquanto as outras respondem "quanto cada aluno fez".
     if linhas_descritor:
         if grafico_xp_isolado:
             pdf.add_page()
@@ -356,15 +334,11 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
             pdf.set_text_color(0, 0, 0)
             pdf.ln(6)
 
-    # Desempenho da Turma (tabela + gráfico de XP) numa página, Detalhamento
-    # por Conteúdo (tabela + gráfico de %) começando limpo na próxima — em vez
-    # de deixar as duas seções disputarem espaço na mesma página e a quebra
-    # automática cair no meio de qualquer coisa.
+    # Desempenho da Turma (tabela + gráfico de XP) numa página, Detalhamento por Conteúdo (tabela + gráfico de %) começando limpo na próxima — em vez de deixar as duas seções disputarem espaço na mesma página e a quebra automática cair no meio de qualquer coisa.
     pdf.add_page()
 
     # --- Tabela 2: Detalhamento do conteúdo que o professor estava vendo ---
-    # Mesma regra da tabela 1: com nome vai de margem a margem (170mm) pra dar
-    # 68mm ao nome completo; sem nome, 150mm centralizados.
+    # Mesma regra da tabela 1: com nome vai de margem a margem (170mm) pra dar 68mm ao nome completo; sem nome, 150mm centralizados.
     largura_tabela2 = largura_util if usar_nome_relatorio else 150  # 38+68+26+20+18 | 50+30+40+30
     x_tabela2 = pdf.l_margin + (largura_util - largura_tabela2) / 2
     pdf.set_font("CMU", 'B', 13)
@@ -373,11 +347,7 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     pdf.set_font("CMU", 'B', 11)
     pdf.set_x(x_tabela2)
     if usar_nome_relatorio:
-        # 38+68+26+20+18 = 170 (largura útil inteira). A coluna de login tem os
-        # mesmos 38mm da tabela 1 de propósito: com 32mm um login comprido
-        # colidia com o nome da coluna vizinha (visto no teste). Cabeçalhos
-        # encurtados ("Total" em vez de "Total Questões") porque com 5 colunas o
-        # texto longo não cabe mais.
+        # 38+68+26+20+18 = 170 (largura útil inteira). A coluna de login tem os mesmos 38mm da tabela 1 de propósito: com 32mm um login comprido colidia com o nome da coluna vizinha (visto no teste). Cabeçalhos encurtados ("Total" em vez de "Total Questões") porque com 5 colunas o texto longo não cabe mais.
         pdf.cell(38, 9, text="Login", border=1, align='C')
         pdf.cell(68, 9, text="Aluno", border=1, align='C')
         pdf.cell(26, 9, text="Concluídas", border=1, align='C')
