@@ -8,7 +8,6 @@ from missoes import render_missoes_dinamicas
 
 
 def render_pagina_conteudo_dinamico(conteudo):
-    # Título desenhado pelo roteador (bloco 10), junto com os botões Teoria/Questões.
     if conteudo.get("descricao"):
         st.markdown(f"*{conteudo['descricao']}*")
     st.write("---")
@@ -18,10 +17,6 @@ def render_pagina_conteudo_dinamico(conteudo):
         st.info("📭 Esta disciplina ainda não possui orientações cadastradas. Peça ao professor para adicioná-las no Painel do Professor.")
         return
 
-    """
-    st.expander (mesmo componente do conteúdo estático) com expanded=True: abre mostrando o
-    conteúdo, e o aluno pode recolher.
-    """
     for i, secao in enumerate(secoes, start=1):
         with st.expander(f"{i}️⃣ {secao.get('titulo', '')}", expanded=True):
             st.markdown(secao.get("texto", ""))

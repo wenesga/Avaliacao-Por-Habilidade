@@ -35,23 +35,19 @@ def nome_da_faixa(percentual):
 
 
 def cor_por_percentual_concluido(percentual):
-    """Cor forte da faixa (para barras e gráficos)."""
     return FAIXAS[faixa_do_percentual(percentual)][2]
 
 
 def fundo_acerto(percentual):
-    """Fundo suave da célula na cor da faixa, com texto escuro para ler bem nos dois temas."""
     return f"background-color: {FAIXAS[faixa_do_percentual(percentual)][3]}; color: #1f2937"
 
 
 def percentual_acerto(par):
-    """Porcentagem de acerto de um [acertos, tentativas], ou None se não houve tentativa."""
     if not par or not par[1]:
         return None
     return round(par[0] / par[1] * 100)
 
 
 def texto_acerto(par):
-    """Texto da célula: '62% (24/39)', ou '—' sem tentativa."""
     pct = percentual_acerto(par)
     return "—" if pct is None else f"{pct}% ({par[0]}/{par[1]})"

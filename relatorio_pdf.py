@@ -80,11 +80,6 @@ LARGURA_ROTULO_CABECALHO_PDF = 32  # mm — cabe "Professor(a):" em negrito 10pt
 
 
 def _linha_dado_pdf(pdf, rotulo, valor):
-    """
-    Uma linha 'Rótulo: valor' alinhada à esquerda, com rótulo em negrito de largura fixa para os
-    valores alinharem na mesma coluna (formato de documentos curtos: Acadêmico / Curso / Disciplina
-    / Professor / Data).
-    """
     pdf.set_font("CMU", 'B', 10)
     pdf.cell(LARGURA_ROTULO_CABECALHO_PDF, 6, text=f"{rotulo}:", align='L')
     pdf.set_font("CMU", '', 10)
@@ -167,7 +162,6 @@ def _grafico_barras_pdf(pdf, titulo, itens, x_tabela, largura_tabela):
 
 @st.cache_data
 def nome_de_arquivo(texto):
-    """'Estatística Descritiva' -> 'estatistica_descritiva' (sem acento nem símbolo)."""
     sem_acento = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "_", sem_acento.lower()).strip("_") or "conteudo"
 
@@ -195,10 +189,6 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
 
     largura_util = pdf.w - pdf.l_margin - pdf.r_margin  # 170mm em A4 com margens de 20mm
 
-    """
-    --- Dados do relatório (Instituição/Professor/Turma opcionais, Data sempre) ---
-    Rótulo em negrito + dois pontos, alinhado à esquerda (formato de documentos curtos).
-    """
     if nome_instituicao:
         _linha_dado_pdf(pdf, "Instituição", nome_instituicao)
     if nome_professor:
@@ -209,7 +199,6 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     _linha_dado_pdf(pdf, "Data", data_relatorio)
     pdf.ln(3)
 
-    # --- Título centralizado ---
     pdf.set_font("CMU", 'B', 16)
     pdf.cell(largura_util, 10, text="Relatório de Desempenho - Avaliação por Habilidade", align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
@@ -263,18 +252,12 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
 
     pdf.ln(6)
 
-    # --- Gráfico de barras: XP por aluno (ver _grafico_barras_pdf: regras de página) ---
     grafico_xp_isolado = False
     if lista_geral:
         maior_xp = max((linha["XP Total"] for linha in lista_geral), default=0) or 1
         itens_xp = [(l["Aluno"], l["XP Total"] / maior_xp, str(l["XP Total"]), l.get("Cor", "#ff4b4b")) for l in lista_geral]
         grafico_xp_isolado = _grafico_barras_pdf(pdf, "Gráfico de XP por Aluno", itens_xp, x_tabela1, largura_tabela1)
 
-    """
-    --- Tabela de habilidades (só se houver questão mapeada) ---
-    Fica logo depois do Desempenho da Turma, na primeira página quando cabe: responde "o que a turma
-    aprendeu", enquanto as outras respondem "quanto cada aluno fez".
-    """
     if linhas_descritor:
         if grafico_xp_isolado:
             pdf.add_page()
@@ -299,10 +282,6 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
             pdf.cell(40, 9, text=f'{linha["Conclusões"]}/{linha["Possíveis"]}', border=1, align='C')
             pdf.cell(40, 9, text=f'{linha["% Concluído"]}%', border=1, align='C', new_x="LMARGIN", new_y="NEXT")
 
-    """
-    --- Acerto por aluno em cada habilidade (igual à tabela da Visão Geral) ---
-    Em blocos de 5 habilidades por tabela, para caber na largura da página.
-    """
     if acerto and acerto[0]:
         habilidades_ac, linhas_ac = acerto
         pdf.add_page()
@@ -358,11 +337,6 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     """
     pdf.add_page()
 
-    """
-    --- Tabela 2: Detalhamento do conteúdo em tela ---
-    Mesma regra da tabela 1: com nome, vai de margem a margem (170mm), dando 68mm ao nome completo;
-    sem nome, 150mm centralizados.
-    """
     largura_tabela2 = largura_util if usar_nome_relatorio else 150  # 38+68+26+20+18 | 50+30+40+30
     x_tabela2 = pdf.l_margin + (largura_util - largura_tabela2) / 2
     pdf.set_font("CMU", 'B', 13)
@@ -403,7 +377,6 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
 
     pdf.ln(6)
 
-    # --- Gráfico de barras: % concluído nesse conteúdo, por aluno (escala 0-100) ---
     if linhas_conteudo:
         itens_pct = []
         for linha in linhas_conteudo:

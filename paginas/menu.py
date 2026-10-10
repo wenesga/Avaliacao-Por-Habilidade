@@ -18,10 +18,6 @@ condicional acima da navegação move tudo que vem depois.
 """
 def render_menu_lateral():
     """Conteúdo da barra lateral. Chamada dentro de `with st.sidebar:` no app.py."""
-    """
-    Botão "🏠 Início" no topo, acima da logo. A logo/título logo abaixo também leva à Início: dois
-    caminhos para o mesmo destino.
-    """
     if st.button("🏠  Início", key="nav_inicio", use_container_width=True,
                  type="primary" if st.session_state.pagina == PAGINA_INICIO else "secondary"):
         st.session_state.pagina = PAGINA_INICIO
@@ -84,10 +80,6 @@ def render_menu_lateral():
     """
     st.markdown('<hr class="sidebar-divisor-identidade">', unsafe_allow_html=True)
 
-    """
-    --- Nível 2: as matérias. Clicar abre a matéria. O progresso vai no próprio rótulo, então o menu
-    mostra onde o aluno parou em cada matéria sem blocos extras que cresçam ou encolham. ---
-    """
     concluidas_por_conteudo = progresso_resumo_aluno()
 
     st.markdown('<div class="sidebar-secao">Disciplinas</div>', unsafe_allow_html=True)
@@ -103,10 +95,6 @@ def render_menu_lateral():
                      type="primary" if ativo else "secondary"):
             ir_para_materia(cid)
 
-    """
-    Mesma classe da linha entre Acessar e Matéria Padrão: o <hr> padrão do Streamlit não deixa
-    espaço igual dos dois lados.
-    """
     st.markdown('<hr class="sidebar-divisor-professor">', unsafe_allow_html=True)
 
     """
@@ -121,10 +109,6 @@ def render_menu_lateral():
         st.session_state.pagina = PAGINA_PROFESSOR
         st.rerun()
 
-    """
-    Botão da pesquisa (formulário externo): só aparece se o professor informou o endereço em
-    Configurações. Abre em outra aba.
-    """
     url_pesquisa = st.session_state.config.get("url_pesquisa", "")
     if url_pesquisa:
         st.markdown('<hr class="sidebar-divisor-professor">', unsafe_allow_html=True)

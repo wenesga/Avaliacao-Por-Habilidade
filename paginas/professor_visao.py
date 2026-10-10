@@ -95,10 +95,6 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None, de="", at
         pcts = [percentual_acerto(par) for par in pares]
         linhas_txt.append([("👥 " if rotulo == "Turma" else "") + rotulo] + [texto_acerto(par) for par in pares])
         if rotulo == "Turma":
-            """
-            A linha da turma tem o nome em cinza (para não ser confundida com um aluno) e as células
-            na cor da faixa, em negrito, como o resumo por descritor da escola.
-            """
             linhas_css.append([ESTILO_LINHA_TURMA] + [
                 fundo_acerto(p) + "; font-weight: bold" if p is not None else ESTILO_LINHA_TURMA for p in pcts
             ])
@@ -118,10 +114,6 @@ def _desmarcar_tabela_alunos():
 
 @st.dialog("🗑️ Excluir aluno")
 def _dialog_confirmar_exclusao_alunos(nomes_alvo):
-    """
-    Popup modal (st.dialog) em vez de um aviso mais abaixo na página, que obrigaria a rolar para
-    encontrá-lo.
-    """
     if len(nomes_alvo) == 1:
         st.warning(f"⚠️ Tem certeza que deseja excluir **{nomes_alvo[0]}** e todo o progresso dele(a)? Essa ação não pode ser desfeita.")
     else:
@@ -151,7 +143,6 @@ def _dialog_confirmar_apagar_banco():
 
 
 def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
-    """Tabela e gráfico de conclusão por habilidade (da turma toda, ou de um conteúdo)."""
     st.subheader("🎯 Desempenho por Habilidade")
     linhas_descritor = desempenho_por_descritor(alunos, conteudo_id)
     if not linhas_descritor:
@@ -183,7 +174,6 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
                 x=alt.X("% Concluído:Q", scale=alt.Scale(domain=[0, 100])),
                 y=alt.Y("Habilidade:N", sort=None),
                 color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                 tooltip=[alt.Tooltip("Habilidade:N", title="Habilidade"), alt.Tooltip("% Concluído:Q", title="% Concluído")],
             ),
             use_container_width=True,
@@ -230,10 +220,6 @@ def render_desempenho_turma():
         st.info("Nenhum aluno iniciou a avaliação ainda.")
         return
 
-    """
-    Meta de XP definida pelo professor em Configurações; sem valor salvo, usa metade do catálogo
-    atual como ponto de partida.
-    """
     xp_catalogo_total = xp_maximo_catalogo_atual()
     meta_xp = st.session_state.config.get("meta_xp") or (xp_catalogo_total / 2)
 
@@ -273,10 +259,6 @@ def render_desempenho_turma():
             colunas_visiveis = ["Aluno", "XP Total", "Erros Totais"]
             if df_geral["Nome no Relatório"].str.strip().any():
                 colunas_visiveis.insert(1, "Nome no Relatório")
-            """
-            Tabela em HTML (título em negrito, como as outras). A exclusão é feita por uma lista de
-            nomes logo acima da tabela.
-            """
             tabela_centralizada(df_geral[colunas_visiveis])
             with espaco_botao_excluir:
                 col_nomes, col_botao = st.columns([4, 1], vertical_alignment="bottom")
@@ -333,7 +315,6 @@ def render_desempenho_turma():
                     x=alt.X("XP Total:Q"),
                     y=alt.Y("Aluno:N", sort=None),
                     color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                    # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                     tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("XP Total:Q", title="XP Total")],
                 )
             )
@@ -344,10 +325,6 @@ def render_desempenho_turma():
             de, ate, sufixo, filtrado = _filtros_acerto()
             renderizar_acerto_por_aluno_e_habilidade(alunos, None, de, ate, sufixo, filtrado)
 
-            """
-            Relatório em PDF da turma toda (todos os conteúdos somados), com os mesmos filtros da
-            tabela acima. Os relatórios de cada conteúdo ficam nas outras abas.
-            """
             linhas_geral = []
             for nome, perfil in alunos.items():
                 feitas = total_cid = erros = 0
@@ -389,10 +366,6 @@ def render_desempenho_turma():
             linhas = []
             for nome, perfil in alunos.items():
                 prog = perfil.get("progresso", {}).get(cid, {"missao_atual": 1, "erros": 0})
-                """
-                missao_atual aponta para a próxima questão a responder (começa em 1); "concluídas" é
-                missao_atual - 1, limitado ao total.
-                """
                 concluidas = max(prog["missao_atual"] - 1, 0)
                 concluidas = min(concluidas, total) if total else concluidas
                 linhas.append({"Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
@@ -421,7 +394,6 @@ def render_desempenho_turma():
                         x=alt.X("% Concluído:Q"),
                         y=alt.Y("Aluno:N", sort=None),
                         color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                        # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                         tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("% Concluído:Q", title="% Concluído")],
                     )
                 )
@@ -438,7 +410,6 @@ def render_desempenho_turma():
                 nome_professor=st.session_state.config.get("nome_professor", ""),
                 turma=st.session_state.config.get("turma", ""),
                 data_relatorio=formatar_data_relatorio(st.session_state.config.get("cidade", "")),
-                # Habilidades e acerto só deste conteúdo: o PDF sai da aba e fala dela.
                 linhas_descritor=desempenho_por_descritor(alunos, cid),
                 acerto=tabela_de_acerto(alunos, cid),
             )
