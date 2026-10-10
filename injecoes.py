@@ -5,21 +5,15 @@ import os
 
 
 def _injetar_manifest_pwa():
-    """Substitui o <link rel="manifest"> e o <link rel="apple-touch-icon"> no
-    <head> real da página (via window.parent, já que este componente roda
-    num iframe à parte) pelos nossos, apontando pros ícones da logo do projeto
-    servidos como arquivo de verdade em /static (ver .streamlit/config.toml,
-    "enableStaticServing").
+    """
+    Troca o <link rel="manifest"> e o <link rel="apple-touch-icon"> do <head> da página (via
+    window.parent, pois o componente roda em um iframe) pelos do projeto, servidos como arquivos em
+    /static (ver enableStaticServing em .streamlit/config.toml).
 
-    O próprio Streamlit já injeta essas duas tags por padrão (manifest
-    genérico com name "Streamlit" e favicon_256.png do framework) — por isso
-    não dá pra só acrescentar quando "não existir": a tag do Streamlit sempre
-    existe primeiro, então é preciso achar a que já está lá e trocar o href.
-
-    Importante: o href do manifest e dos ícones precisa ser uma URL de
-    arquivo real — uma tentativa anterior usando "data:" URI embutida veio
-    vazia porque não é um formato garantido pra src de ícone de manifest, e
-    o Android silenciosamente ignorava e caía no ícone genérico."""
+    O Streamlit já injeta essas tags com valores genéricos, então é preciso localizar a tag
+    existente e trocar o href. O href deve ser uma URL de arquivo real: URIs "data:" não são aceitas
+    de forma confiável em ícones de manifest e o Android recai no ícone genérico.
+    """
     if not os.path.exists("static/manifest.json"):
         return
     components.html(
@@ -51,30 +45,16 @@ def _injetar_manifest_pwa():
 
 
 def _injetar_bloqueio_espaco_apelido():
-    """Tira o espaço do campo de apelido assim que ele aparece, como em campo
-    de nome de usuário de site — funciona digitando, colando ou em qualquer
-    teclado, inclusive o virtual de celular.
+    """
+    Remove espaços do campo de apelido assim que aparecem, digitando, colando ou em qualquer
+    teclado, inclusive o virtual do celular.
 
-    Versão anterior escutava 'keydown' (a tecla sendo pressionada) e bloqueava
-    o espaço antes de entrar. Funcionava em teclado físico, mas boa parte dos
-    teclados virtuais de celular (Android, iPhone) não dispara um 'keydown' de
-    verdade pra cada tecla — o texto entra no campo por outro caminho, sem
-    passar pelo evento que a versão antiga escutava. Resultado: bloqueava no
-    computador e deixava passar no celular.
+    Usa o evento 'input', que dispara sempre que o valor do campo muda (ao contrário de 'keydown',
+    que muitos teclados virtuais não emitem). A checagem `if (limpo === el.value) return` evita laço
+    infinito: o valor só é reescrito quando há espaço a remover.
 
-    A correção ouve 'input' em vez de 'keydown'. 'input' dispara sempre que o
-    VALOR do campo muda de verdade, não importa como — teclado físico, teclado
-    virtual, colar, ditado por voz. Deixa o espaço entrar e tira na mesma hora,
-    então o efeito visual pro aluno é o mesmo (o espaço nunca fica ali), só que
-    funciona em qualquer aparelho.
-
-    O guard `if (limpo === el.value) return` evita loop infinito: só mexemos
-    no campo quando há espaço de verdade pra tirar; sem espaço, o handler não
-    reescreve o valor e não dispara a si mesmo de novo.
-
-    Isto é conveniência de digitação, NÃO validação: apelido_invalido() continua
-    valendo no servidor e é ela que garante a regra mesmo se o JS estiver
-    desligado ou o navegador se comportar diferente do esperado."""
+    É conveniência de digitação, não validação: apelido_invalido() continua valendo no servidor.
+    """
     components.html(
         """
         <script>
@@ -106,17 +86,13 @@ def _injetar_bloqueio_espaco_apelido():
 
 
 def _injetar_aviso_saida():
-    """Aviso nativo do navegador ('Sair do site? Alterações podem não ser
-    salvas') antes de fechar a aba, atualizar ou navegar pra fora.
+    """
+    Mostra o aviso nativo do navegador ('Sair do site?') ao fechar, atualizar ou sair da página.
 
-    Esse app é uma SPA (single page application):
-    tudo acontece dentro de uma única página carregada, trocando de conteúdo
-    via WebSocket — nunca existe uma "página anterior" de verdade. Por isso
-    o botão Voltar do navegador não tem pra onde voltar dentro do app, e sai
-    fora dele sem aviso nenhum, confundindo quem tá usando. O texto do aviso
-    é fixo, definido pelo próprio navegador por segurança (nenhum site pode
-    customizar essa mensagem desde ~2011) — só dá pra ligar/desligar, não
-    mudar a aparência."""
+    O app é uma SPA: o conteúdo muda via WebSocket dentro de uma única página, então o botão Voltar
+    do navegador sai do app sem aviso. O texto do aviso é fixo (definido pelo navegador); só é
+    possível ligá-lo ou desligá-lo.
+    """
     components.html(
         """
         <script>
@@ -137,23 +113,14 @@ def _injetar_aviso_saida():
 
 
 def _injetar_liberar_scroll_grafico():
-    """Deixa a página rolar normalmente quando o mouse está em cima de um
-    gráfico (Altair/Vega-Lite).
+    """
+    Permite rolar a página normalmente quando o mouse está sobre um gráfico (Altair/Vega-Lite).
 
-    O wrapper do próprio Streamlit (.stVegaLiteChart) intercepta o scroll do
-    mouse em cima de QUALQUER gráfico, mesmo sem nenhuma opção de zoom/pan
-    ligada no gráfico em si — confirmado direto no navegador (nenhum gráfico
-    deste app usa .interactive(), e mesmo assim o scroll travava; e trocar
-    st.bar_chart por Altair puro, testado antes, não resolveu — o bloqueio
-    vem do wrapper do Streamlit, não da biblioteca do gráfico). Quem tenta
-    rolar a página com o cursor em cima de um gráfico ficava "preso" ali.
-
-    Como a captura acontece num listener interno do Streamlit/Vega, não dá
-    pra simplesmente "desligar" essa opção — a correção é ouvir o evento de
-    scroll ANTES dele (fase de captura, que sempre roda primeiro, não importa
-    o que outro listener faça depois) e, se o alvo for dentro de um gráfico,
-    rolar a área principal da página (.stMain, que é quem de fato tem a
-    barra de rolagem no Streamlit) manualmente."""
+    O wrapper .stVegaLiteChart do Streamlit intercepta o scroll sobre qualquer gráfico, mesmo sem
+    zoom/pan ligado. Como a captura ocorre em um listener interno, a solução é ouvir o evento de
+    scroll na fase de captura (que roda antes) e, se o alvo estiver dentro de um gráfico, rolar
+    manualmente a área principal (.stMain).
+    """
     components.html(
         """
         <script>
@@ -178,14 +145,13 @@ def _injetar_liberar_scroll_grafico():
 
 
 def _injetar_clique_logo_inicio():
-    """Faz a LOGO (imagem) também levar pra Início ao clicar, não só o texto
-    "Trilha de Aprendizagem" ao lado: logo e título formam um único elemento
-    visual, então clicar em qualquer parte tem que navegar.
+    """
+    Faz a logo também levar à Início ao clicar, como o título.
 
-    st.image() não tem on_click nem aceita link. A solução é ouvir clique em
-    qualquer lugar dentro do cabeçalho (".st-key-sidebar_cabecalho") e, se não
-    foi um clique direto no botão de título, simular um clique nele — reaproveita
-    a navegação que o botão já faz, sem duplicar lógica de rerun/session_state."""
+    st.image() não aceita on_click nem link. O código escuta cliques no cabeçalho
+    (".st-key-sidebar_cabecalho") e, se não foi um clique direto no botão do título, simula um
+    clique nele, reaproveitando a navegação existente.
+    """
     components.html(
         """
         <script>

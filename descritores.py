@@ -58,7 +58,7 @@ def campo_descritor(rotulo, valor_atual="", chave=None, ajuda=""):
     indice = opcoes.index(valor_atual) if valor_atual else None
     escolhida = st.selectbox(
         rotulo, opcoes, index=indice, key=chave, help=ajuda,
-        # Rótulo com a descrição INTEIRA: o Streamlit só pesquisa dentro do rótulo, e a lista já corta a linha sozinha. Assim dá para achar "mediana" mesmo que a palavra esteja no fim da descrição.
+        # Rótulo com a descrição inteira, pois o Streamlit só pesquisa dentro do rótulo.
         format_func=lambda c: f"{c} · {habilidades[c]}" if c in habilidades else c,
         placeholder="Digite o código ou uma palavra da habilidade",
         accept_new_options=True,  # descritor fora da lista: o professor digita o código
@@ -67,29 +67,27 @@ def campo_descritor(rotulo, valor_atual="", chave=None, ajuda=""):
 
 
 def descritores_do_conteudo(cid, c):
-    """Descritores (sem repetição, ordenados) usados pelas questões de um
-    conteúdo cadastrado pelo professor. Lista vazia se nenhuma
-    questão foi mapeada. Usado só no Painel do Professor (Gerenciar
-    Conteúdos): é informação de planejamento curricular, sem utilidade pro
-    aluno durante o jogo."""
+    """
+    Descritores (sem repetição, ordenados) usados pelas questões de um conteúdo cadastrado. Lista
+    vazia se nenhuma questão foi mapeada. Usado só no Painel do Professor (planejamento curricular).
+    """
     codigos = {str(m.get("descritor", "")).strip() for m in c.get("missoes", [])}
     codigos.discard("")
     return sorted(codigos)
 
 
 def desempenho_por_descritor(alunos, conteudo_id=None):
-    """Agrega o progresso da turma por descritor (só de um conteúdo,
-    se conteudo_id for dado: é o caso do PDF exportado de uma aba).
+    """
+    Agrega o progresso da turma por descritor (de um conteúdo, se conteudo_id for dado).
 
-    Retorna [{Habilidade, Questões, Conclusões, Possíveis, % Concluído}], onde
-    'Conclusões' conta cada par (aluno, questão concluída) das questões marcadas
-    com aquela habilidade, e 'Possíveis' é o total se todos concluíssem tudo.
+    Retorna [{Habilidade, Questões, Conclusões, Possíveis, % Concluído}]: 'Conclusões' conta cada
+    par (aluno, questão concluída) das questões com aquele descritor, e 'Possíveis' é o total se
+    todos concluíssem tudo.
 
-    Nota sobre o que este número significa: o banco guarda o ponto onde o aluno
-    parou na avaliação (missao_atual) e o total de erros por conteúdo — não o acerto
-    de cada questão isolada. Então 'concluída' aqui é 'o aluno passou por ela',
-    que na mecânica da avaliação só acontece após acertar. Não confundir com
-    'acertou de primeira'."""
+    O banco guarda onde o aluno parou (missao_atual) e o total de erros, não o acerto de cada
+    questão. 'Concluída' significa 'o aluno passou por ela', o que só ocorre após acertar; não
+    equivale a 'acertou de primeira'.
+    """
     acumulado = {}
     for cid in st.session_state.conteudos:
         if conteudo_id and cid != conteudo_id:

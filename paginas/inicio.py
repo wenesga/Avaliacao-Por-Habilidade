@@ -11,18 +11,16 @@ from sessao import ir_para_materia
 # 6. PÁGINA INICIAL (BANNER + ATALHOS)
 @st.fragment(run_every="5s")
 def render_placar_turma():
-    """Placar da turma, no estilo Kahoot: apelido + XP, atualizando sozinho.
+    """
+    Placar da turma: apelido + XP, atualizando sozinho.
 
-    O @st.fragment(run_every="5s") faz SÓ este bloco recarregar de 5 em 5
-    segundos, sem repintar a página nem interromper o aluno que está no meio de
-    uma questão. Não é push — o Streamlit não avisa as outras sessões; é o
-    navegador de cada aluno consultando o banco. Com uma turma pequena e a
-    consulta enxuta de ranking_turma(), a carga é desprezível.
+    @st.fragment(run_every="5s") recarrega só este bloco a cada 5 segundos, sem repintar a página
+    nem interromper o aluno no meio de uma questão. Não é push: cada navegador consulta o banco, e
+    com uma turma pequena e a consulta enxuta de ranking_turma() a carga é desprezível.
 
-    Mostrar o desempenho em público só é aceitável porque o aluno entra com
-    apelido: o objetivo não é
-    anonimato, é não expor o nome de quem está atrás. Quem quiser se revelar,
-    se revela — e isso vira parte da brincadeira."""
+    Exibir o desempenho em público só é aceitável porque o aluno entra com apelido: o objetivo não é
+    o anonimato, é não expor o nome de quem está por trás.
+    """
     placar = ranking_turma()
     if not placar:
         return
@@ -49,19 +47,16 @@ def render_placar_turma():
 
 
 def renderizar_grade_cartoes(cartoes, prefixo_key):
-    """Grade de cartões (ícone, título, descrição, botão "Acessar →"), 3 por
-    linha. cartoes é uma lista de dicts {icone, titulo, descricao, on_click,
-    progresso} — on_click é uma função SEM argumento, chamada ao clicar no
-    botão (varia: pode abrir uma matéria direto, ou abrir o hub de
-    Estatística). "progresso" é opcional: uma string tipo "3/8" ou "✓" pra
-    mostrar quantas questões DAQUELE card específico já foram concluídas.
-    Necessário porque o "8/44" do menu lateral soma os 6
-    sub-temas de Estatística juntos e não dá pra saber, olhando só ali, quanto
-    cada um já rendeu individualmente.
+    """
+    Grade de cartões (ícone, título, descrição, botão "Acessar →"), 3 por linha. cartoes é uma lista
+    de dicts {icone, titulo, descricao, on_click, progresso}. on_click é uma função sem argumento
+    chamada ao clicar (abre uma matéria ou o hub de Estatística). "progresso" é opcional ("3/8" ou
+    "✓") e mostra quantas questões daquele card já foram concluídas, pois o "8/44" do menu lateral
+    soma os 6 sub-temas de Estatística.
 
-    Usada tanto pelos "Conteúdos disponíveis" da Início quanto pelos 6
-    sub-temas do hub de Estatística — prefixo_key garante keys únicas nos
-    widgets mesmo quando a mesma matéria aparece nas duas telas."""
+    Usada nos "Conteúdos disponíveis" da Início e nos 6 sub-temas do hub de Estatística; prefixo_key
+    garante keys únicas quando a mesma matéria aparece nas duas telas.
+    """
     for inicio_linha in range(0, len(cartoes), 3):
         colunas = st.columns(3)
         for i, cartao in enumerate(cartoes[inicio_linha:inicio_linha + 3]):
@@ -69,7 +64,10 @@ def renderizar_grade_cartoes(cartoes, prefixo_key):
             cor = PALETA_CORES_CARTAO[idx_global % len(PALETA_CORES_CARTAO)]
             with colunas[i]:
                 with st.container(border=True, key=f"{prefixo_key}_cartao_{idx_global}_cor_{cor}"):
-                    # Progresso na MESMA linha do título, texto simples (sem badge colorido) — mesmo padrão já usado no menu lateral ("📊 Estatística · 1/44"). Uma versão anterior usava um badge numa linha própria, mas isso deixava o card mais alto que o necessário só por causa de uma informação curta.
+                    """
+                    Progresso na mesma linha do título, como texto simples (padrão do menu lateral,
+                    "📊 Estatística · 1/44"), para não deixar o card mais alto.
+                    """
                     titulo_linha = f"#### {cartao['icone']} {cartao['titulo']}"
                     if cartao.get("progresso"):
                         titulo_linha += f"  ·  {cartao['progresso']}"
@@ -95,7 +93,10 @@ def render_pagina_inicial():
         logo_html = '<div class="home-banner-logo">🎓</div>'
 
     if os.path.exists(ARQUIVO_BANNER):
-        # Arte pronta (static/banner.jpg, com a metade esquerda livre) como fundo; o título vai por cima em HTML.
+        """
+        Arte pronta (static/banner.jpg, com a metade esquerda livre) como fundo; o título vai por
+        cima em HTML.
+        """
         st.markdown(
             f'''
             <div class="home-banner-arte" style="background-image: url('app/{ARQUIVO_BANNER}')">
@@ -119,7 +120,11 @@ def render_pagina_inicial():
         </div>
         """, unsafe_allow_html=True)
 
-    # Dentro de um expander, FECHADO por padrão — quem tem curiosidade clica e vê, quem não tem, nem repara que existe. Cada navegador é uma sessão isolada do Streamlit: o professor abrir ou fechar no notebook projetado no data show não afeta o que aparece no celular de nenhum aluno. Também ajuda com turma grande, onde a lista ficaria comprida antes do resto da página.
+    """
+    Dentro de um expander, fechado por padrão, para quem tiver curiosidade. Cada navegador é uma
+    sessão isolada: abrir ou fechar no computador do professor não afeta o celular de nenhum aluno.
+    Também evita uma lista longa antes do resto da página em turmas grandes.
+    """
     with st.expander("🏆 Placar da Turma", expanded=False):
         render_placar_turma()
     st.write("")

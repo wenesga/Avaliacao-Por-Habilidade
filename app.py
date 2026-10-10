@@ -2,7 +2,10 @@ import os
 import sys
 import subprocess
 
-# Ancora o diretório de trabalho na pasta deste arquivo. Sem isso, os caminhos relativos (logo, banner, bancos) só funcionam se quem rodar o script já estiver "dentro" desta pasta no terminal.
+"""
+Ancora o diretório de trabalho na pasta deste arquivo, para que os caminhos relativos (logo, banner,
+bancos) funcionem de onde quer que o script seja iniciado.
+"""
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st

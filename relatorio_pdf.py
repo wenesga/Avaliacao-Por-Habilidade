@@ -12,46 +12,44 @@ from faixas import cor_por_percentual_concluido, fundo_acerto, percentual_acerto
 
 
 def hex_para_rgb(cor_hex):
-    """'#2ecc71' -> (46, 204, 113). fpdf2 quer três inteiros pro set_fill_color,
-    não aceita hex direto como o Altair/CSS aceitam."""
+    """
+    '#2ecc71' -> (46, 204, 113): fpdf2 exige três inteiros em set_fill_color e não aceita hex.
+    """
     cor_hex = cor_hex.lstrip("#")
     return tuple(int(cor_hex[i:i + 2], 16) for i in (0, 2, 4))
 
 
 class _PDFComCabecalho(FPDF):
-    """FPDF que desenha o timbre institucional (ARQUIVO_CABECALHO) só no topo
-    da PRIMEIRA página do relatório (as demais páginas ficam com o espaço
-    todo para tabelas e gráficos).
+    """
+    FPDF que desenha o timbre institucional (ARQUIVO_CABECALHO) só no topo da primeira página do
+    relatório (as demais ficam com o espaço todo para tabelas e gráficos).
 
-    Continua sendo via header() e não um pdf.image() solto depois do
-    add_page(): assim a primeira página sempre leva o timbre, e o fpdf2 cuida
-    de não desenhá-lo nas páginas seguintes, inclusive nas criadas pela
-    quebra automática de página.
-
-    Se o arquivo não existir, o relatório sai sem timbre e nada quebra —
-    mesma lógica de fallback do logo.png/banner.png na tela."""
+    Usa header() em vez de pdf.image() solto: assim a primeira página sempre leva o timbre e o fpdf2
+    não o repete nas seguintes, inclusive nas criadas por quebra automática. Se o arquivo não
+    existir, o relatório sai sem timbre.
+    """
 
     def header(self):
         if self.page_no() != 1 or not os.path.exists(ARQUIVO_CABECALHO):
             return
         largura = self.w - self.l_margin - self.r_margin
         self.image(ARQUIVO_CABECALHO, x=self.l_margin, y=10, w=largura)
-        # pdf.image() não move o cursor no fpdf2, então o Y de onde o conteúdo
-        # começa tem que ser calculado: a altura vem da proporção real do arquivo (lida com PIL, não chutada — trocar a arte por uma de outra proporção continua funcionando sem mexer no código).
+        """
+        pdf.image() não move o cursor no fpdf2, então o Y inicial do conteúdo é calculado a partir
+        da proporção real do arquivo (lida com PIL), e trocar a arte por outra proporção continua
+        funcionando.
+        """
         with Image.open(ARQUIVO_CABECALHO) as img:
             altura = largura * img.height / img.width
         self.set_y(10 + altura + 6)
 
 
 def _texto_que_cabe(pdf, texto, largura_celula, folga=2):
-    """Encurta o texto com '...' até caber na célula.
-
-    pdf.cell() não quebra linha nem corta: texto maior que a largura vaza por
-    cima da célula vizinha. Foi o que aconteceu no teste com o login
-    'VingadorDoFuturo3' invadindo a coluna do nome completo ao lado. Login e
-    nome no relatório são digitados livremente pelo aluno e pelo professor, então
-    não dá pra confiar em limite fixo de caracteres — aqui a medida é em mm, na
-    fonte que está ativa no momento da chamada."""
+    """
+    Encurta o texto com '...' até caber na célula. pdf.cell() não quebra nem corta: texto maior que
+    a largura vaza sobre a célula vizinha. Login e nome são digitados livremente, então não há
+    limite fixo de caracteres; a medida é em mm, na fonte ativa na chamada.
+    """
     texto = str(texto)
     limite = largura_celula - folga
     if pdf.get_string_width(texto) <= limite:
@@ -68,11 +66,11 @@ MESES_PT = [
 
 
 def formatar_data_relatorio(cidade=""):
-    """Data de hoje por extenso (ex.: 'Arraias - TO, 07 de setembro de 2026').
-
-    Calculada fora da função cacheada (gerar_pdf_relatorio) e passada como
-    argumento: assim ela entra na chave do @st.cache_data, e o cache se
-    renova sozinho quando o dia muda, sem precisar excluir a função do cache."""
+    """
+    Data de hoje por extenso (ex.: 'Arraias - TO, 07 de setembro de 2026'). É calculada fora da
+    função cacheada (gerar_pdf_relatorio) e passada como argumento, entrando na chave do
+    @st.cache_data: o cache se renova quando o dia muda.
+    """
     hoje = date.today()
     texto = f"{hoje.day:02d} de {MESES_PT[hoje.month - 1]} de {hoje.year}"
     return f"{cidade}, {texto}" if cidade else texto
@@ -82,10 +80,11 @@ LARGURA_ROTULO_CABECALHO_PDF = 32  # mm — cabe "Professor(a):" em negrito 10pt
 
 
 def _linha_dado_pdf(pdf, rotulo, valor):
-    """Uma linha 'Rótulo: valor' alinhada à esquerda — rótulo em negrito com
-    largura fixa, pra várias linhas seguidas alinharem o valor na mesma
-    coluna (formato de documentos curtos: Acadêmico / Curso / Disciplina /
-    Professor / Data)."""
+    """
+    Uma linha 'Rótulo: valor' alinhada à esquerda, com rótulo em negrito de largura fixa para os
+    valores alinharem na mesma coluna (formato de documentos curtos: Acadêmico / Curso / Disciplina
+    / Professor / Data).
+    """
     pdf.set_font("CMU", 'B', 10)
     pdf.cell(LARGURA_ROTULO_CABECALHO_PDF, 6, text=f"{rotulo}:", align='L')
     pdf.set_font("CMU", '', 10)
@@ -102,18 +101,19 @@ MINIMO_BARRAS_POR_PAGINA = 3     # nunca deixa 1 ou 2 barras soltas numa página
 
 
 def _grafico_barras_pdf(pdf, titulo, itens, x_tabela, largura_tabela):
-    """Gráfico de barras horizontais (uma por aluno), desenhado à mão com rect().
+    """
+    Gráfico de barras horizontais (uma por aluno), desenhado à mão com rect().
 
     itens: lista de (rótulo, fração 0-1 da barra, texto do valor, cor hex).
 
     Regras de página:
-    - cabe no espaço que sobrou na página: fica onde está;
-    - não cabe: começa numa página nova, e o gráfico ocupa só a(s) página(s)
-      dele (quem chamou deve abrir outra página antes do próximo conteúdo);
-    - passa de uma página (turma grande): quebra sem deixar barra solta
-      (mínimo de MINIMO_BARRAS_POR_PAGINA por página) e repete o título com
-      "(continuação)".
-    Retorna True se o gráfico usou páginas próprias, False se coube no lugar."""
+    - cabe no espaço restante: fica onde está;
+    - não cabe: começa em uma página nova e ocupa só a(s) página(s) dele (quem chamou deve abrir
+      outra página antes do próximo conteúdo);
+    - passa de uma página (turma grande): quebra sem deixar barra solta (mínimo de
+      MINIMO_BARRAS_POR_PAGINA por página) e repete o título com "(continuação)".
+    Retorna True se o gráfico usou páginas próprias, False se coube no lugar.
+    """
     largura_rotulo, largura_valor = 35, 15
     largura_barra_max = largura_tabela - largura_rotulo - largura_valor
     x_inicio_barra = x_tabela + largura_rotulo
@@ -173,22 +173,19 @@ def nome_de_arquivo(texto):
 
 
 def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_instituicao="", nome_professor="", turma="", data_relatorio="", linhas_descritor=None, acerto=None):
-    """Gera o PDF com margens laterais simétricas, título centralizado e as
-    duas tabelas: Desempenho da Turma + Detalhamento do conteúdo que estava em tela.
+    """
+    Gera o PDF com margens laterais simétricas, título centralizado e duas tabelas: Desempenho da
+    Turma e Detalhamento do conteúdo em tela.
 
-    Cacheado com @st.cache_data: o st.tabs() do Streamlit renderiza TODAS as
-    abas por trás mesmo com só uma visível, então sem cache esse PDF (com
-    fonte embutida, nada barato de gerar) era recalculado do zero pra cada
-    um dos 5 conteúdos a cada clique na página — mesmo sem nada ter mudado.
-    Com o cache, só recalcula quando os argumentos (dados do aluno, nome da
-    instituição/professor) realmente mudam entre uma chamada e outra.
+    Cacheado com @st.cache_data: o st.tabs() renderiza todas as abas, então sem cache o PDF (com
+    fonte embutida) seria gerado de novo para cada conteúdo a cada clique. O cache só recalcula
+    quando os argumentos (dados dos alunos, instituição, professor) mudam.
 
-    Fonte: CMU Serif (Computer Modern Unicode) embutida via TTF em vez da Arial
-    padrão do fpdf2 — visual de documento LaTeX/acadêmico. Os arquivos ficam em
-    fonts/ (licença OFL, ver fonts/OFL.txt); precisam ser embutidos porque o
-    fpdf2 não vem com essa fonte, e "CMU" não existe nos leitores de PDF por
-    padrão. Negrito fica só no título, subtítulos e cabeçalho das tabelas —
-    linhas de dado ficam em peso normal, de propósito."""
+    Fonte CMU Serif (Computer Modern Unicode) embutida via TTF, em vez da Arial padrão do fpdf2,
+    para o visual de documento acadêmico. Os arquivos ficam em fonts/ (licença OFL, ver
+    fonts/OFL.txt) e precisam ser embutidos porque os leitores de PDF não têm a fonte. Negrito só no
+    título, subtítulos e cabeçalho das tabelas.
+    """
     pdf = _PDFComCabecalho()
     pdf.add_font("CMU", "", "fonts/CMUSerif-Roman.ttf")
     pdf.add_font("CMU", "B", "fonts/CMUSerif-Bold.ttf")
@@ -198,8 +195,10 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
 
     largura_util = pdf.w - pdf.l_margin - pdf.r_margin  # 170mm em A4 com margens de 20mm
 
-    # --- Dados do relatório (Instituição/Professor/Turma opcionais, Data sempre) ---
-    # Rótulo em negrito + dois pontos, alinhado à esquerda, formato de documentos curtos. Substituiu o bloco centralizado que tinha antes.
+    """
+    --- Dados do relatório (Instituição/Professor/Turma opcionais, Data sempre) ---
+    Rótulo em negrito + dois pontos, alinhado à esquerda (formato de documentos curtos).
+    """
     if nome_instituicao:
         _linha_dado_pdf(pdf, "Instituição", nome_instituicao)
     if nome_professor:
@@ -215,11 +214,24 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     pdf.cell(largura_util, 10, text="Relatório de Desempenho - Avaliação por Habilidade", align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
 
-    # --- Tabela 1: Desempenho da turma ---
-    # Tabelas mais estreitas que a largura útil e centralizadas na página (em vez de esticadas de margem a margem) — fica com cara de tabela de relatório/artigo, não de planilha crua. pdf.cell() com new_x="LMARGIN" sempre volta pra margem esquerda da página no fim da linha, então cada linha precisa reposicionar o X pro início da tabela centralizada de novo. A coluna "Nome no Relatório" só entra se ALGUÉM tiver preenchido: professor que não usa o recurso continua recebendo o PDF de 3 colunas de sempre, sem uma coluna vazia ocupando espaço. Quem preencheu só metade da turma recebe as células dos outros em branco, de propósito — dá pra completar à caneta depois de imprimir. As larguras abaixo somam os MESMOS 150mm nos dois casos: o espaço da coluna nova sai da folga das colunas numéricas (45mm pra escrever "175" era exagero), não das margens, que ficam intocadas.
+    """
+    --- Tabela 1: Desempenho da turma ---
+    Tabela mais estreita que a largura útil e centralizada, com aparência de relatório. pdf.cell()
+    com new_x="LMARGIN" volta à margem esquerda no fim da linha, então cada linha reposiciona o X no
+    início da tabela.
+
+    A coluna "Nome no Relatório" só aparece se alguém tiver preenchido; sem ela, o PDF mantém as 3
+    colunas. Células de quem não preencheu ficam em branco, para completar à caneta. As larguras
+    somam os mesmos 150mm nos dois casos: o espaço da coluna nova sai da folga das colunas
+    numéricas, não das margens.
+    """
     usar_nome_relatorio = any(str(l.get("Nome no Relatório", "")).strip() for l in lista_geral)
 
-    # COM a coluna de nome a tabela ocupa a largura útil inteira (170mm, ou seja, exatamente de margem a margem) — os 20mm que sobravam de cada lado vão todos pra coluna do nome, que passa de 52 pra 72mm e para de cortar nome completo. SEM a coluna de nome ficam os 150mm centralizados de sempre: com 3 colunas curtas, esticar de margem a margem deixaria a tabela com cara de planilha esticada, e aí a folga é proposital (ver comentário abaixo).
+    """
+    COM a coluna de nome, a tabela ocupa a largura útil inteira (170mm) e a coluna do nome passa de
+    52 para 72mm, sem cortar nomes completos. SEM ela, ficam os 150mm centralizados: com 3 colunas
+    curtas, esticar de margem a margem deixaria a tabela desproporcional.
+    """
     largura_tabela1 = largura_util if usar_nome_relatorio else 150  # 38+72+30+30 | 60+45+45
     x_tabela1 = pdf.l_margin + (largura_util - largura_tabela1) / 2
     pdf.set_font("CMU", 'B', 13)
@@ -258,8 +270,11 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
         itens_xp = [(l["Aluno"], l["XP Total"] / maior_xp, str(l["XP Total"]), l.get("Cor", "#ff4b4b")) for l in lista_geral]
         grafico_xp_isolado = _grafico_barras_pdf(pdf, "Gráfico de XP por Aluno", itens_xp, x_tabela1, largura_tabela1)
 
-    # --- Tabela de habilidades (só se houver questão mapeada) ---
-    # Fica logo depois do Desempenho da Turma, ainda na primeira página quando cabe: é a tabela que responde "o que a turma aprendeu", enquanto as outras respondem "quanto cada aluno fez".
+    """
+    --- Tabela de habilidades (só se houver questão mapeada) ---
+    Fica logo depois do Desempenho da Turma, na primeira página quando cabe: responde "o que a turma
+    aprendeu", enquanto as outras respondem "quanto cada aluno fez".
+    """
     if linhas_descritor:
         if grafico_xp_isolado:
             pdf.add_page()
@@ -284,8 +299,10 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
             pdf.cell(40, 9, text=f'{linha["Conclusões"]}/{linha["Possíveis"]}', border=1, align='C')
             pdf.cell(40, 9, text=f'{linha["% Concluído"]}%', border=1, align='C', new_x="LMARGIN", new_y="NEXT")
 
-    # --- Acerto por aluno em cada habilidade (igual à tabela da Visão Geral) ---
-    # Em blocos de 5 habilidades por tabela, pra caber na largura da página.
+    """
+    --- Acerto por aluno em cada habilidade (igual à tabela da Visão Geral) ---
+    Em blocos de 5 habilidades por tabela, para caber na largura da página.
+    """
     if acerto and acerto[0]:
         habilidades_ac, linhas_ac = acerto
         pdf.add_page()
@@ -334,11 +351,18 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
             pdf.set_text_color(0, 0, 0)
             pdf.ln(6)
 
-    # Desempenho da Turma (tabela + gráfico de XP) numa página, Detalhamento por Conteúdo (tabela + gráfico de %) começando limpo na próxima — em vez de deixar as duas seções disputarem espaço na mesma página e a quebra automática cair no meio de qualquer coisa.
+    """
+    Desempenho da Turma (tabela + gráfico de XP) em uma página e Detalhamento por Conteúdo (tabela +
+    gráfico de %) começando limpo na próxima, para a quebra automática não cair no meio de uma
+    seção.
+    """
     pdf.add_page()
 
-    # --- Tabela 2: Detalhamento do conteúdo que o professor estava vendo ---
-    # Mesma regra da tabela 1: com nome vai de margem a margem (170mm) pra dar 68mm ao nome completo; sem nome, 150mm centralizados.
+    """
+    --- Tabela 2: Detalhamento do conteúdo em tela ---
+    Mesma regra da tabela 1: com nome, vai de margem a margem (170mm), dando 68mm ao nome completo;
+    sem nome, 150mm centralizados.
+    """
     largura_tabela2 = largura_util if usar_nome_relatorio else 150  # 38+68+26+20+18 | 50+30+40+30
     x_tabela2 = pdf.l_margin + (largura_util - largura_tabela2) / 2
     pdf.set_font("CMU", 'B', 13)
@@ -347,7 +371,11 @@ def gerar_pdf_relatorio(lista_geral, conteudo_titulo, linhas_conteudo, nome_inst
     pdf.set_font("CMU", 'B', 11)
     pdf.set_x(x_tabela2)
     if usar_nome_relatorio:
-        # 38+68+26+20+18 = 170 (largura útil inteira). A coluna de login tem os mesmos 38mm da tabela 1 de propósito: com 32mm um login comprido colidia com o nome da coluna vizinha (visto no teste). Cabeçalhos encurtados ("Total" em vez de "Total Questões") porque com 5 colunas o texto longo não cabe mais.
+        """
+        38+68+26+20+18 = 170 (largura útil inteira). A coluna de login tem os mesmos 38mm da tabela
+        1, pois com 32mm um login comprido colidia com a coluna vizinha. Os cabeçalhos são
+        encurtados ("Total" em vez de "Total Questões") para caber em 5 colunas.
+        """
         pdf.cell(38, 9, text="Login", border=1, align='C')
         pdf.cell(68, 9, text="Aluno", border=1, align='C')
         pdf.cell(26, 9, text="Concluídas", border=1, align='C')

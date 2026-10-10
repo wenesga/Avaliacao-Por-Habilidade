@@ -82,13 +82,20 @@ def render_gerenciar_conteudos():
 
             n_missoes = len(c.get("missoes", []))
             badges = [f'<span class="badge-conteudo badge-conteudo-tipo">🧩 {n_missoes} questão(ões)</span>']
-            # Total de XP do conteúdo (acertando tudo de primeira): sem isso o professor teria que abrir cada questão e somar o XP na mão.
+            """
+            Total de XP do conteúdo (acertando tudo de primeira): evita abrir cada questão e somar o
+            XP na mão.
+            """
             badges.append(f'<span class="badge-conteudo badge-conteudo-tipo">💯 Total {xp_maximo_de_conteudo(cid, c)} XP</span>')
             habilidades = descritores_do_conteudo(cid, c)
             if habilidades:
                 badges.append(f'<span class="badge-conteudo badge-conteudo-descritor">🎯 Habilidades: {", ".join(habilidades)}</span>')
             st.markdown(" ".join(badges), unsafe_allow_html=True)
-            # Legenda de cada habilidade (código + começo da descrição oficial), pra o professor não ter que decorar o que significa cada descritor. Só as que têm descrição no banco: o código das demais já está no selo acima.
+            """
+            Legenda de cada habilidade (código + começo da descrição oficial), para o professor não
+            precisar decorar os descritores. Só as que têm descrição no banco; o código das demais
+            já aparece no selo acima.
+            """
             com_descricao = [h for h in habilidades if descricao_curta_descritor(h)]
             for hab in com_descricao:
                 st.caption(f"🎯 **{hab}** · {descricao_curta_descritor(hab, limite=170)}")
@@ -101,7 +108,10 @@ def render_gerenciar_conteudos():
     st.markdown('<div id="ancora-form-conteudo"></div>', unsafe_allow_html=True)
     st.markdown("---")
 
-    # O formulário (criar ou editar) só aparece quando pedido — clicar em "Editar" já liga isso sozinho; pra criar do zero, precisa desse botão. Antes o formulário ficava sempre visível embaixo da lista, então "Cancelar" só limpava os campos em vez de fazer a caixa toda sumir — confuso, parecia que tinha ficado alguma coisa pra trás esperando.
+    """
+    O formulário (criar ou editar) só aparece quando pedido: "Editar" o abre sozinho e, para criar
+    do zero, usa-se o botão. Assim "Cancelar" faz a caixa inteira sumir.
+    """
     if not st.session_state.mostrar_form_conteudo:
         if st.button("➕ Criar Novo Conteúdo"):
             st.session_state.mostrar_form_conteudo = True
@@ -114,7 +124,10 @@ def render_gerenciar_conteudos():
         st.subheader(f"✏️ Editando: {conteudo_original.get('icone', '')} {conteudo_original.get('titulo', '')}")
         st.caption("Altere o que quiser abaixo — título, orientações, questões — e clique em Salvar. "
                    "Os campos já vieram preenchidos com o que existe hoje.")
-        # Ao clicar em "Editar" na lista lá em cima, o formulário reaparece aqui embaixo sem nenhum aviso — quem clicou fica sem saber que precisa rolar a tela pra achar. Rola a tela sozinha até aqui, pra não repetir o mesmo problema da caixa de exclusão de antes.
+        """
+        Ao clicar em "Editar" na lista, o formulário aparece mais abaixo sem aviso; a tela rola
+        sozinha até ele.
+        """
         components.html(
             """
             <script>
@@ -216,7 +229,10 @@ def render_gerenciar_conteudos():
                             "não está entre as alternativas. O aluno não teria como acertar."
                         )
                 elif "alternativas" in missao:
-                    # Trocou de múltipla escolha para outro tipo: as alternativas antigas não valem mais e não devem ir para o conteudos.json.
+                    """
+                    Trocou de múltipla escolha para outro tipo: as alternativas antigas não valem
+                    mais e não devem ir para o conteudos.json.
+                    """
                     del missao["alternativas"]
                 missao["descritor"] = campo_descritor(
                     f"Descritor SAETO {i + 1} (opcional)", valor_atual=missao.get("descritor", ""),
@@ -248,7 +264,11 @@ def render_gerenciar_conteudos():
             )
         with col_p:
             pontos_missao = st.number_input("Pontos (XP)", min_value=1, value=10, step=1)
-        # O campo de alternativas fica sempre visível, mesmo quando o tipo não é múltipla escolha: dentro de um st.form os widgets não disparam rerun, então não há como mostrá-lo só depois que o professor escolhe o tipo.
+        """
+        O campo de alternativas fica sempre visível, mesmo quando o tipo não é múltipla escolha:
+        dentro de um st.form os widgets não disparam rerun, então não há como mostrá-lo só depois
+        que o professor escolhe o tipo.
+        """
         alternativas_missao = st.text_area(
             "Alternativas (só para múltipla escolha) — uma por linha",
             placeholder="média\nmediana\nmoda",
@@ -267,7 +287,11 @@ def render_gerenciar_conteudos():
             if not (titulo_missao and pergunta_missao and resposta_missao):
                 erro_missao = "Preencha o título, a pergunta e a resposta correta."
             elif tipo_missao == "multipla":
-                # Validado no cadastro, e não na hora da aula: uma questão de múltipla escolha sem alternativas, ou cuja resposta correta não está entre elas, viraria uma questão impossível de acertar — e o professor só descobriria com o aluno travado na frente.
+                """
+                Validado no cadastro, e não na aula: uma questão de múltipla escolha sem
+                alternativas, ou cuja resposta correta não esteja entre elas, seria impossível de
+                acertar.
+                """
                 if len(alternativas) < 2:
                     erro_missao = "Múltipla escolha precisa de pelo menos duas alternativas, uma por linha."
                 elif resposta_missao.strip() not in alternativas:
@@ -300,7 +324,11 @@ def render_gerenciar_conteudos():
         for campo in ("novo_titulo_conteudo", "novo_icone_conteudo", "nova_descricao_conteudo"):
             st.session_state.pop(campo, None)
 
-    # Colunas estreitas (não st.columns(2), que divide a largura toda ao meio): aqui o formulário ocupa a página inteira, não um modal estreito como nos diálogos de exclusão — com 50/50 o Cancelar ficava largado no meio da tela, sem nenhuma relação visual com o Salvar. Os dois ficam colados, junto da ação principal.
+    """
+    Colunas estreitas (e não st.columns(2), que divide ao meio): o formulário ocupa a página
+    inteira, então com 50/50 o Cancelar ficaria longe do Salvar. Os dois ficam juntos, perto da ação
+    principal.
+    """
     col_salvar, col_cancelar, _ = st.columns([1, 1, 4])
     with col_salvar:
         if st.button("💾 Salvar", type="primary", key="salvar_conteudo_btn"):

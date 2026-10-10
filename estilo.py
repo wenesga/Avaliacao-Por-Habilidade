@@ -21,53 +21,32 @@ def obter_logo_base64():
 def aplicar_estilo():
     st.markdown("""
 <style>
-    /* Limita a largura do conteúdo principal e centraliza
-       em vez de esticar de ponta a ponta em monitores grandes. Não afeta a
-       barra lateral, que tem sua própria largura fixa. O Streamlit já aplica
-       um padding interno grande por padrão; reduzimos ele aqui pra sobrar
-       mais espaço de conteúdo dentro do limite. */
+    /* Limita a largura do conteúdo principal e o centraliza em monitores grandes. Não afeta a barra
+       lateral (largura fixa). Reduz o padding interno padrão do Streamlit para sobrar mais espaço
+       dentro do limite. */
     .stMainBlockContainer {
         max-width: 870px;
         padding-left: 2rem;
         padding-right: 2rem;
         margin-left: auto;
         margin-right: auto;
-        /* O Streamlit reserva 96px (6rem) de padding-top por padrão, pra
-           sobrar espaço embaixo da barra flutuante (Deploy/menu) — mas
-           aqui essa barra é baixa e o conteúdo já tem título próprio logo
-           abaixo, então sobrava um vão vazio grande no topo de toda
-           página, banner ou não. O valor original era 96px; reduzido para 60px,
-           que deixa uma folga mínima e não encosta no ícone de abrir/fechar a
-           barra lateral da barra de ferramentas do Streamlit. */
+        /* O Streamlit reserva 96px de padding-top por padrão para a barra flutuante (Deploy/menu).
+           Aqui a barra é baixa e o conteúdo já tem título, então o espaço é reduzido para 60px, sem
+           encostar no ícone de abrir/fechar a barra lateral. */
         padding-top: 60px;
     }
 
-    /* Só o botão "Deploy" (chrome do Streamlit Cloud) — NÃO a barra inteira.
-       O "⋮" fica visível pra trocar o tema
-       claro/escuro. Versão
-       anterior escondia a barra toda (`[data-testid="stHeader"]
-       {display:none}`), e isso quebrou o botão de expandir a barra
-       lateral: ao encolher a barra lateral e recarregar a
-       página, o botão pra abrir de novo (`stExpandSidebarButton`) mora
-       DENTRO dessa mesma barra escondida, então ficava sem jeito nenhum
-       de reabrir. Escondendo só os dois botões
-       específicos, o resto da barra (inclusive esse controle) continua
-       funcionando normalmente. */
+    /* Esconde só o botão "Deploy", não a barra inteira; o menu "⋮" continua visível para trocar o
+       tema. Esconder a barra toda (`[data-testid="stHeader"]`) esconderia também o botão de reabrir
+       a barra lateral (`stExpandSidebarButton`), que fica dentro dela. */
     [data-testid="stAppDeployButton"] {
         display: none;
     }
 
-    /* Cada bloco invisível (os 5 components.html(..., height=0) que injetam
-       JS — bloqueio de espaço no apelido, aviso de saída, clique na logo etc.
-       — e o próprio <style> deste CSS) ainda ocupa uma "vaga" na lista vertical
-       da página, com o gap de 16px entre itens contando mesmo pra quem tem
-       altura zero. No topo da página isso somava 96px de vão vazio — medido
-       ao vivo, era o resto do espaço que sobrava depois do padding-top e da
-       barra Deploy já cortados. Verificado inspecionando o DOM: 6
-       stElementContainer de altura 0 antes do primeiro
-       botão. display:none tira da lista de vez, sem gap nenhum — e um <style>
-       escondido continua valendo normalmente, isso é comportamento padrão do
-       HTML/CSS, não depende do elemento estar visível. */
+    /* Cada bloco invisível (os components.html(..., height=0) que injetam JS e o próprio <style>)
+       ocupa uma vaga na lista vertical, e o gap de 16px entre itens conta mesmo com altura zero,
+       somando espaço vazio no topo. display:none remove esses itens da lista sem gap; um <style>
+       escondido continua valendo normalmente. */
     .stElementContainer:has([data-testid="stIFrame"]),
     .stElementContainer:has(style) {
         display: none;
@@ -77,15 +56,10 @@ def aplicar_estilo():
     .metric-title { color: #64748b; font-size: 14px; font-weight: 700; text-transform: uppercase; }
     .metric-value { color: #1e3a8a; font-size: 28px; font-weight: 800; margin-top: 5px; }
     .gamification-box { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 15px 20px; border-radius: 10px; font-size: 16px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
-    /* .gamification-box acima nunca chegou a ser usada em lugar nenhum do app —
-       sobra de uma versão antiga. Deixada como está (não é deste ajuste),
-       mas fica o registro pra quem for limpar código depois. */
+    /* Regra sem uso no app (.gamification-box); pode ser removida. */
 
-    /* Selo de XP acima da Avaliação — destaca o XP acumulado,
-       além do texto pequeno que já
-       existe na barra lateral. Gradiente opaco + texto branco (mesma técnica
-       do .home-banner), não rgba() semi-transparente: aqui o objetivo é
-       "saltar aos olhos" como um emblema de jogo, não se misturar ao tema. */
+    /* Selo de XP acima da Avaliação. Usa gradiente opaco e texto branco (mesma técnica de
+       .home-banner), e não rgba() semitransparente, para se destacar do tema como um emblema. */
     .xp-destaque-missoes {
         display: inline-flex;
         align-items: center;
@@ -129,24 +103,18 @@ def aplicar_estilo():
     .home-banner-titulo { font-size: 32px; font-weight: 800; margin: 0; }
     .home-banner-subtitulo { font-size: 16px; opacity: 0.92; margin-top: 6px; max-width: 640px; }
 
-    /* O tema claro/escuro do Streamlit pode ser trocado dentro do próprio
-       app (menu ⋮ > Settings), sem relação com o tema do sistema — então
-       "@media (prefers-color-scheme)" não pega essa troca de jeito nenhum
-       (é por isso que a versão anterior falhou: fundo claro + texto branco
-       herdado do tema escuro real = ilegível). A saída é não tentar
-       detectar o tema: rgba() semi-transparente vira um "tingimento" sobre
-       o que estiver por trás, então se adapta sozinho. Opacidade calibrada
-       pra bater com os tons reais que o Streamlit usa (~#f0f2f6 no claro,
-       ~#262730 no escuro). Sem "color" no
-       texto, ele herda a cor certa do tema automaticamente. */
+    /* O tema claro/escuro pode ser trocado dentro do app (menu ⋮ > Settings), independente do tema
+       do sistema, então "@media (prefers-color-scheme)" não detecta a troca. Em vez de detectar o
+       tema, usa rgba() semitransparente, que tinge o fundo existente e se adapta sozinho (opacidade
+       calibrada para ~#f0f2f6 no claro e ~#262730 no escuro). Sem "color" no texto, ele herda a cor
+       do tema. */
     .home-step-card {
         background-color: rgba(148, 163, 184, 0.16); border: 1px solid rgba(148, 163, 184, 0.4); border-radius: 12px;
         padding: 18px; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         margin-bottom: 16px;
     }
-    /* Placar da turma. Mesma técnica de cor dos cartões da home: rgba() por
-       cima do fundo, sem "color" fixo no texto, pra funcionar no tema claro e
-       no escuro sem tentar detectar qual está ativo. */
+    /* Placar da turma: mesma técnica dos cartões da home (rgba() sobre o fundo, sem "color" fixo),
+       para funcionar nos dois temas. */
     .placar-caixa {
         border: 1px solid rgba(148, 163, 184, 0.4);
         border-radius: 12px;
@@ -181,12 +149,9 @@ def aplicar_estilo():
     .home-step-titulo { font-size: 17px; font-weight: 700; margin: 4px 0 6px 0; }
     .home-step-texto { opacity: 0.75; font-size: 14px; }
 
-    /* Cartões com borda (st.container(border=True)) dentro de colunas lado a
-       lado: por padrão cada um só cresce até onde o próprio texto termina,
-       ficando com alturas diferentes. A coluna em si já é esticada pelo
-       Streamlit pra acompanhar a mais alta do grupo, mas isso é feito via
-       flexbox (não uma altura fixa), então "height: 100%" sozinho não
-       resolve — precisa de flex-grow pra herdar esse espaço extra. */
+    /* Cartões com borda (st.container(border=True)) em colunas lado a lado: o Streamlit estica a
+       coluna via flexbox para acompanhar a mais alta, então "height: 100%" não basta; é preciso
+       flex-grow para o cartão ocupar o espaço extra e todos ficarem com a mesma altura. */
     div[data-testid="stColumn"] div[data-testid="stLayoutWrapper"] {
         flex-grow: 1;
     }
@@ -194,11 +159,9 @@ def aplicar_estilo():
         height: 100%;
     }
 
-    /* Cores suaves dos cartões de "Conteúdos disponíveis" (ver PALETA_CORES_CARTAO
-       e o key="cartao_..._cor_X" passado a st.container). Usa rgba() com opacidade
-       baixa em vez de cor sólida, pra funcionar bem tanto no tema claro quanto no
-       escuro — a cor vira um "tingimento" leve por cima do fundo de cada tema,
-       em vez de uma cor fixa que combina com um só dos dois. */
+    /* Cores suaves dos cartões de "Conteúdos disponíveis" (ver PALETA_CORES_CARTAO e a key
+       "cartao_..._cor_X" de st.container). Usa rgba() de baixa opacidade para funcionar nos dois
+       temas. */
     [class*="_cor_azul"]    { background-color: rgba(59, 130, 246, 0.12) !important; border-color: rgba(59, 130, 246, 0.4) !important; }
     [class*="_cor_roxo"]    { background-color: rgba(168, 85, 247, 0.12) !important; border-color: rgba(168, 85, 247, 0.4) !important; }
     [class*="_cor_rosa"]    { background-color: rgba(236, 72, 153, 0.12) !important; border-color: rgba(236, 72, 153, 0.4) !important; }
@@ -206,43 +169,32 @@ def aplicar_estilo():
     [class*="_cor_verde"]   { background-color: rgba(16, 185, 129, 0.12) !important; border-color: rgba(16, 185, 129, 0.4) !important; }
     [class*="_cor_ciano"]   { background-color: rgba(6, 182, 212, 0.12) !important; border-color: rgba(6, 182, 212, 0.4) !important; }
 
-    /* Título dos painéis expansíveis (st.expander) um pouco maior — vale tanto
-       pro conteúdo estático (Estatística) quanto pros conteúdos dinâmicos,
-       já que os dois usam o mesmo componente e ficam consistentes entre si. */
+    /* Título dos painéis expansíveis (st.expander) um pouco maior, igual para conteúdo estático e
+       dinâmico (mesmo componente). */
     div[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p {
         font-size: 20px !important;
         font-weight: 600 !important;
     }
 
-    /* Título principal de cada página (st.title = h1) vinha no tamanho padrão do
-       Streamlit (44px), bem maior que os títulos de seção da própria home
-       ("Como funciona", "Conteúdos disponíveis", 28px/600 via h3) — igualado
-       aqui pra manter a mesma hierarquia visual em todas as páginas (Painel do
-       Professor, Avaliação, Conteúdo). Line-height é relativo (em), então
-       acompanha o font-size automaticamente. */
+    /* Título principal de cada página (st.title, h1): reduzido do padrão do Streamlit (44px) para
+       combinar com os títulos de seção da home (28px/600 via h3), mantendo a mesma hierarquia em
+       todas as páginas. O line-height é relativo (em) e acompanha o font-size. */
     h1 {
         font-size: 28px !important;
         font-weight: 600 !important;
     }
 
-    /* Título dentro dos cartões de "Conteúdos disponíveis" (h4, ver PALETA_CORES_CARTAO)
-       vinha em 24px, maior que o título dos cartões "Como funciona" (17px/700,
-       .home-step-titulo) — reduzido pra bater com esse tamanho. Escopado só aos
-       cartões de conteúdo via [class*="_cor_"] (mesma classe usada pra cor de fundo),
-       pra não afetar outros h4 do app. */
+    /* Título dos cartões de "Conteúdos disponíveis" (h4): 17px/700, igual ao de .home-step-titulo.
+       Limitado a esses cartões via [class*="_cor_"] para não afetar outros h4 do app. */
     [class*="_cor_"] h4 {
         font-size: 17px !important;
         font-weight: 700 !important;
     }
 
-    /* Cartões "Como funciona" (Passo 1/2/3) usam st.markdown com HTML cru
-       (.home-step-card), não st.container(border=True) — por isso o fix de altura
-       igual acima (stLayoutWrapper) não se aplica a eles: o texto do Passo 3 é mais
-       longo, então só aquele cartão cresce. stVerticalBlock/stColumn já esticam pra
-       acompanhar o mais alto do grupo (comportamento nativo do Streamlit), mas o
-       stElementContainer por dentro não geda esse espaço extra sem flex-grow.
-       :has() escopa a regra só aos cartões com .home-step-card, sem mexer em outras
-       colunas do app. */
+    /* Os cartões "Como funciona" usam st.markdown com HTML (.home-step-card), então a regra de
+       altura igual acima (stLayoutWrapper) não os alcança. stVerticalBlock/stColumn já esticam até
+       o mais alto do grupo, mas o stElementContainer interno só ocupa esse espaço extra com
+       flex-grow. :has() limita a regra aos cartões com .home-step-card. */
     div[data-testid="stElementContainer"]:has(.home-step-card) {
         flex-grow: 1;
         display: flex;
@@ -253,11 +205,9 @@ def aplicar_estilo():
         height: 100%;
     }
 
-    /* Cada conteúdo cadastrado (Painel do Professor > Gerenciar Conteúdos) é
-       um st.container(border=True) — cartão de verdade, com borda e cantos
-       arredondados, em vez da lista em colunas com uma linha horizontal
-       entre cada item. Estilo PRÓPRIO do painel do professor — não é
-       pra copiar o card do aluno na Início, que mostra outra informação. */
+    /* Cada conteúdo cadastrado (Gerenciar Conteúdos) é um st.container(border=True): cartão com
+       borda e cantos arredondados, com estilo próprio do painel do professor, diferente do card do
+       aluno na Início. */
     div[class*="st-key-card_conteudo_"] {
         margin-bottom: 12px;
     }
@@ -282,13 +232,9 @@ def aplicar_estilo():
         color: #047857;
     }
 
-    /* Cards suaves dos 3 totais de XP em Configurações (Matéria Padrão /
-       Matérias Cadastradas / Total do catálogo) — antes usava st.metric(),
-       que só desenha número preto puro sem nenhuma cor de fundo; aqui se
-       usa um visual mais
-       suave. Reaproveita as MESMAS cores dos badges de card (indigo dos
-       badges de tipo, verde do descritor) + um terceiro tom neutro pro total,
-       que é soma dos outros dois, não uma categoria própria. */
+    /* Cards suaves dos 3 totais de XP em Configurações (Matéria Padrão / Matérias Cadastradas /
+       Total do catálogo), no lugar de st.metric(). Reaproveitam as cores dos badges de card (índigo
+       do tipo, verde do descritor) e um tom neutro para o total, que é a soma dos outros dois. */
     .resumo-xp-card {
         border-radius: 12px;
         padding: 14px 16px;
@@ -306,31 +252,21 @@ def aplicar_estilo():
         font-size: 21px;
         font-weight: 700;
     }
-    /* Em tela estreita (celular), st.columns empilha os 3 cards um embaixo
-       do outro — e aí eles ficavam colados.
-       Causa: o stMarkdownContainer do Streamlit já vem com margin-bottom:
-       -16px por padrão (serve pra cancelar um espaçamento dele mesmo quando
-       tem mais coisa depois dentro do mesmo bloco). Em coluna lado a lado
-       isso não se nota — o espaço entre colunas é horizontal (column-gap),
-       não vertical. Empilhado, essa margem negativa passa a comer o
-       row-gap vertical entre as colunas, cancelando os 16px de respiro.
-       Zerar a margem só nas colunas com .resumo-xp-card devolve o respiro
-       sem mexer no espaçamento de mais nada no app. */
+    /* Em tela estreita (celular), st.columns empilha os 3 cards e eles ficavam colados. O
+       stMarkdownContainer tem margin-bottom: -16px por padrão; empilhado, essa margem negativa
+       consome o row-gap vertical entre as colunas. Zerá-la só nas colunas com .resumo-xp-card
+       devolve o espaçamento sem afetar o resto do app. */
     div[data-testid="stColumn"]:has(.resumo-xp-card) div[data-testid="stMarkdownContainer"] {
         margin-bottom: 0 !important;
     }
     .resumo-xp-total { background: #f1f5f9; }
     .resumo-xp-total .rotulo, .resumo-xp-total .valor { color: #334155; }
 
-    /* Pop-up de "Salvo com sucesso" (ver renderizar_flash_pendente): fixo no
-       canto superior direito, por cima de tudo, pra não precisar rolar a
-       tela pra ver (caso típico: editar um conteúdo longo, salvar, e a
-       mensagem aparecer lá em cima, fora da tela). st.toast() faria isso
-       nativamente (mesma posição, canto superior direito), mas parou de
-       funcionar neste ambiente. Pequeno de propósito: não é um modal, não
-       bloqueia clique em nada por trás. Some sozinho em 3s via animação CSS
-       — st.markdown não executa <script>, então
-       não dá pra usar um timer JS; keyframes resolve sem precisar de JS. */
+    /* Pop-up de "Salvo com sucesso" (ver renderizar_flash_pendente): fixo no canto superior
+       direito, por cima de tudo, para aparecer mesmo quando o formulário é longo e a mensagem
+       ficaria fora da tela. st.toast() não funciona neste ambiente. É pequeno, não bloqueia cliques
+       e some sozinho em 3s por animação CSS (st.markdown não executa <script>, então não há timer
+       em JS). */
     @keyframes flash-toast-sumir {
         0%, 80% { opacity: 1; }
         100% { opacity: 0; }
@@ -353,13 +289,9 @@ def aplicar_estilo():
         pointer-events: none;
     }
 
-    /* Botões "Editar"/"Excluir" de cada conteúdo cadastrado: por padrão as duas
-       colunas do st.columns(2) dividem o espaço em duas metades iguais, então
-       sobra um vão grande entre os botões (cada um bem mais estreito que sua
-       metade da coluna) e o par fica "flutuando" à esquerda do espaço
-       reservado. Aqui as colunas encolhem pro tamanho do próprio botão
-       (flex: 0 0 auto), o vão entre elas fica pequeno, e o par todo é
-       empurrado pra direita — só dentro do key deste container. */
+    /* Botões "Editar"/"Excluir" de cada conteúdo cadastrado: as colunas do st.columns(2) encolhem
+       para o tamanho do botão (flex: 0 0 auto), deixando o par junto e alinhado à direita, só
+       dentro do key deste container. */
     div[class*="st-key-acoes_conteudo_"] div[data-testid="stHorizontalBlock"] {
         gap: 8px !important;
         justify-content: flex-end;
@@ -368,17 +300,10 @@ def aplicar_estilo():
         width: auto !important;
         flex: 0 0 auto !important;
     }
-    /* Em tela estreita (celular), o Streamlit faz duas coisas ao mesmo tempo
-       que juntas quebravam essa fileira de botões (verificado no celular):
-       empilha QUALQUER st.columns() na
-       vertical, E força min-width: calc(100% - 24px) em cada coluna —
-       quase a largura inteira do card, pensado pra layout empilhado. A
-       primeira tentativa de correção só forçou a linha a ficar horizontal
-       (flex-wrap: nowrap), mas cada coluna continuou "querendo" quase 100%
-       de largura por causa do min-width — o resultado foi as 4 colunas se
-       empurrando pra fora do card, e só a última ("Excluir") sobrava
-       visível. A correção de verdade precisa zerar esse min-width também,
-       senão width:auto não tem efeito nenhum (min-width vence no flexbox). */
+    /* Em tela estreita (celular), o Streamlit empilha qualquer st.columns() e força min-width:
+       calc(100% - 24px) em cada coluna, o que quebrava essa fileira de botões. A correção mantém a
+       linha horizontal (flex-wrap: nowrap) e zera o min-width, que prevalece sobre width:auto no
+       flexbox. */
     @media (max-width: 640px) {
         div[class*="st-key-acoes_conteudo_"] div[data-testid="stHorizontalBlock"] {
             flex-direction: row !important;
@@ -390,17 +315,10 @@ def aplicar_estilo():
         }
     }
 
-    /* Botão "Sair" do Painel do Professor: empurra pra borda direita da
-       coluna sem esticar o botão. Duas pegadinhas, encontradas medindo no
-       navegador:
-       1) O container do Streamlit por baixo dos panos já é flex-direction:
-          COLUNA — então justify-content controla o eixo VERTICAL, não o
-          horizontal (por isso não tinha efeito nenhum). Quem alinha no eixo
-          horizontal, numa coluna, é align-items.
-       2) O filho direto do container vem com width:100% do próprio
-          Streamlit — um filho largo assim não sobra espaço nenhum pra
-          alinhar, então a largura dele também precisa ser travada pro
-          tamanho do próprio conteúdo. */
+    /* Botão "Sair" do Painel do Professor: empurra para a borda direita da coluna sem esticar. O
+       container do Streamlit já é flex-direction: column, então o alinhamento horizontal é feito
+       por align-items (justify-content atuaria no eixo vertical). O filho direto vem com
+       width:100%, então a largura também é travada no tamanho do conteúdo. */
     div[class*="st-key-acao_sair_professor"] {
         display: flex;
         align-items: flex-end;
@@ -409,12 +327,10 @@ def aplicar_estilo():
         width: fit-content !important;
     }
 
-    /* Sobe o conteúdo inteiro da barra lateral (Início + tudo abaixo) uns 5mm
-       (~19px) pra cima. O espaço de origem não
-       é nosso: é margin-bottom:16px do próprio cabeçalho do Streamlit (ícone
-       de recolher a barra), medido ao vivo via getBoundingClientRect(); não
-       dá pra mexer nesse cabeçalho sem arriscar cortar o ícone, então o ajuste
-       é uma margem negativa no bloco de conteúdo logo abaixo dele. */
+    /* Sobe o conteúdo da barra lateral (Início e abaixo) ~19px. O espaço de origem é o
+       margin-bottom:16px do cabeçalho do Streamlit (ícone de recolher a barra); como esse cabeçalho
+       não pode ser alterado sem cortar o ícone, o ajuste é uma margem negativa no bloco logo
+       abaixo. */
     div[data-testid="stSidebarUserContent"] {
         margin-top: -19px;
     }
@@ -485,45 +401,30 @@ def aplicar_estilo():
         font-weight: 600;
     }
 
-    /* Barrinha na borda esquerda dos itens do menu — diferencia "Matéria
-       Padrão" (roxo/azul) de "Matérias Cadastradas" (verde) mesmo em
-       repouso, sem pintar o botão inteiro (encostaria na cor do item
-       ativo e viraria parque de diversão). Primeira versão era cinza neutro,
-       mas ficou imperceptível demais — trocada por cor de verdade,
-       mantendo discreto por ser só um traço fino, não
-       um preenchimento. Cores emprestadas dos badges do Painel do Professor
-       (.badge-conteudo-tipo / .badge-conteudo-descritor), pra usar a mesma
-       linguagem visual em vez de inventar uma terceira paleta. Some quando o
-       botão está ativo (kind="primary", já azul): a barrinha só faz
-       sentido como pista discreta no estado normal. */
+    /* Barrinha na borda esquerda dos itens do menu: diferencia "Matéria Padrão" (roxo/azul) de
+       "Matérias Cadastradas" (verde) em repouso, sem pintar o botão inteiro. Usa as cores dos
+       badges do Painel do Professor (.badge-conteudo-tipo / .badge-conteudo-descritor). Some quando
+       o botão está ativo (kind="primary", já azul). */
     div[class*="st-key-nav_conteudo_"] button[kind="secondary"] {
         border-left: 3px solid #10b981;
     }
 
-    /* Bloco de identidade do aluno no topo da barra lateral: as duas versões
-       (deslogado = campo de nome + "Acessar"; logado = nome + XP + "Sair")
-       têm alturas naturais diferentes, e como o Streamlit desenha de cima pra
-       baixo, essa diferença empurrava TODO o menu de navegação alguns pixels
-       pra baixo ao logar. A altura mínima reserva o espaço da versão mais
-       alta (a deslogada), então os itens do menu ficam sempre na mesma
-       coordenada — dá pra clicar "Início" no mesmo lugar antes e depois de
-       entrar. Valor conferido no DOM real das duas versões, não estimado. */
+    /* Bloco de identidade do aluno no topo da barra lateral: a versão deslogada (campo de nome +
+       "Acessar") e a logada (nome + XP + "Sair") têm alturas diferentes, o que moveria todo o menu
+       abaixo ao logar. A altura mínima reserva o espaço da versão mais alta (deslogada) para que os
+       itens do menu fiquem sempre na mesma posição. */
     div[class*="st-key-sidebar_identidade"] {
         min-height: 148px;
-        /* O conteúdo logado (nome + XP + Sair) é mais baixo que o deslogado
-           (campo + dica + Acessar), que é quem define os 148px. Sem isso,
-           a sobra de altura ficava toda embaixo, abrindo um vão grande entre
-           o botão "Sair" e o divisor — display:flex + justify-content:center
-           reparte essa sobra em cima e embaixo, sem mudar a altura total
-           (o que continua garantindo que o menu abaixo não se mexa). */
+        /* A versão logada (nome + XP + Sair) é mais baixa que a deslogada, que define os 148px.
+           display:flex + justify-content:center reparte a sobra de altura em cima e embaixo, sem
+           abrir vão entre "Sair" e o divisor e sem mudar a altura total. */
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
 
-    /* Linha de dica/erro do apelido. Existe sempre (com a dica ou com o erro),
-       nunca aparece e some — senão o bloco de identidade mudaria de altura e
-       empurraria o menu, que é justamente o que o min-height acima evita. */
+    /* Linha de dica/erro do apelido: existe sempre (com a dica ou com o erro), para não mudar a
+       altura do bloco de identidade, que o min-height acima mantém fixa. */
     .apelido-aviso {
         font-size: 12px;
         opacity: 0.65;
@@ -535,10 +436,9 @@ def aplicar_estilo():
         opacity: 1;
     }
 
-    /* Rótulo do grupo "Matérias": não é um item clicável, é o cabeçalho do
-       nível 2 da navegação. Menor, em caixa alta e apagado justamente pra
-       não competir com os botões e deixar a hierarquia visível de relance
-       (Início e Painel do Professor são nível 1, sem rótulo de grupo). */
+    /* Rótulo do grupo "Matérias": cabeçalho do nível 2 da navegação, não clicável. Menor, em caixa
+       alta e apagado para não competir com os botões (Início e Painel do Professor são nível 1, sem
+       rótulo). */
     .sidebar-secao {
         font-size: 11px;
         font-weight: 700;
@@ -548,56 +448,40 @@ def aplicar_estilo():
         margin: 4px 0 6px 4px;
     }
 
-    /* "Matérias Cadastradas" fica um pouco mais separada do botão de cima
-       ("📊 Estatística") do que o espaçamento padrão do .sidebar-secao —
-       reforça visualmente que é o início de um grupo novo, não uma
-       continuação do mesmo. */
+    /* "Matérias Cadastradas" fica um pouco mais afastada do botão de cima ("📊 Estatística") que o
+       espaçamento padrão de .sidebar-secao, marcando o início de um novo grupo. */
     .sidebar-secao-espacada {
         margin-top: 16px;
     }
 
-    /* Linha entre "Acessar" e "Início": margem ASSIMÉTRICA de propósito, não
-       erro — o st.form do login (que fica logo acima) soma ~19px de espaço
-       próprio que o <hr> sozinho não tem embaixo. Medido no DOM (não
-       chutado): sem isso, o espaço de cima ficava 27px e o de baixo só 8px.
-       margin-top:0 (deixa só o espaço que o form já garante) e
-       margin-bottom:19px (iguala ao que sobra em cima) deixam os dois lados
-       com a MESMA distância final. */
+    /* Linha entre "Acessar" e "Início": margem assimétrica de propósito. O st.form do login acima
+       soma ~19px de espaço próprio que o <hr> não tem embaixo; margin-top:0 e margin-bottom:19px
+       deixam as distâncias de cima e de baixo iguais. */
     .sidebar-divisor-identidade {
         border: none;
         border-top: 1px solid rgba(128, 128, 128, 0.25);
         margin: 0px 4px 19px 4px !important;
     }
 
-    /* Linha entre a última matéria cadastrada e "Painel do Professor":
-       margem assimétrica de propósito (mesmo raciocínio da
-       .sidebar-divisor-identidade) — medido no DOM, com 8px dos dois lados o
-       espaço de cima ficava 24px e o de baixo só 8px. margin-bottom maior
-       iguala os dois. */
+    /* Linha entre a última matéria cadastrada e "Painel do Professor": margem assimétrica de
+       propósito (mesmo raciocínio de .sidebar-divisor-identidade); o margin-bottom maior iguala as
+       distâncias de cima e de baixo. */
     .sidebar-divisor-professor {
         border: none;
         border-top: 1px solid rgba(128, 128, 128, 0.25);
         margin: 8px 4px 24px 4px !important;
     }
 
-    /* Cabeçalho da barra lateral: logo EM CIMA, título EMBAIXO, os dois
-       centralizados — não lado a lado (a versão anterior deixava o título
-       desalinhado com a logo, com cara de gambiarra). */
+    /* Cabeçalho da barra lateral: logo em cima e título embaixo, ambos centralizados. */
     div[class*="st-key-sidebar_cabecalho"] {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        /* Aproxima o título da logo. O
-           espaçamento de origem (16px) não vem de nenhuma margem nossa: é o
-           "gap" padrão que o Streamlit aplica entre elementos empilhados
-           dentro de um container, confirmado medindo ao vivo (getBoundingClientRect
-           batendo exatamente com o "gap" do flex, 16px). Reduzir esse gap é o
-           jeito direto de aproximar; um "margin-top" negativo no botão do
-           título, tentado antes, tem efeito inconsistente aqui porque o botão
-           fica dentro de um item flex (que não deixa a margem colapsar com o
-           container do jeito esperado) — medido ao vivo, não deu o resultado
-           previsto, por isso o ajuste é no gap, não em margem. */
+        /* Aproxima o título da logo reduzindo o gap padrão de 16px que o Streamlit aplica entre
+           elementos empilhados em um container. Um margin-top negativo no botão do título não
+           funciona de forma consistente, porque o botão fica dentro de um item flex, cuja margem
+           não colapsa com a do container. */
         gap: 2px;
     }
     div[class*="st-key-sidebar_cabecalho"] img {
@@ -605,12 +489,9 @@ def aplicar_estilo():
         cursor: pointer;
     }
 
-    /* Título "Trilha de Aprendizagem": é um st.button de verdade (leva pra
-       Início ao clicar — ver bloco 9), mas precisa PARECER um título, não
-       um botão, senão ficaria estranho um retângulo com borda logo abaixo
-       da logo. Zera fundo/borda/sombra do botão padrão do Streamlit e deixa
-       só o texto, em negrito, centralizado; o :hover sutil (fundo leve) é a
-       única pista visual de que aquilo é clicável. */
+    /* Título "Trilha de Aprendizagem": é um st.button (leva à Início ao clicar) que precisa parecer
+       um título. Zera fundo, borda e sombra do botão padrão e deixa só o texto em negrito e
+       centralizado; o :hover sutil é a única pista de que é clicável. */
     div[class*="st-key-nav_titulo_inicio"] button {
         background: transparent !important;
         border: none !important;

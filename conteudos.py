@@ -24,19 +24,20 @@ def salvar_conteudos(conteudos):
 
 
 def xp_maximo_de_conteudo(cid, c):
-    """XP máximo de UM conteúdo específico, acertando tudo de primeira —
-    cadastrado pelo professor (soma o "Pontos (XP)" de cada questão dele). Usado tanto pro badge "Total X XP" em cada card
-    (Painel do Professor > Gerenciar Conteúdos) quanto pro seletor de
-    "Meta de XP" em Configurações (escolher a disciplina, mostrar o XP dela e
-    definir a meta como porcentagem desse total)."""
+    """
+    XP máximo de um conteúdo cadastrado, acertando tudo de primeira (soma o "Pontos (XP)" de cada
+    questão). Usado no badge "Total X XP" de cada card (Gerenciar Conteúdos) e no seletor de "Meta
+    de XP" em Configurações.
+    """
     return sum(m.get("pontos", 10) for m in c.get("missoes", []))
 
 
 def xp_maximo_catalogo_atual():
-    """XP máximo do catálogo INTEIRO agora, acertando tudo de primeira.
-    Recalculado toda vez que é chamado, então cresce sozinho quando o
-    professor cadastra conteúdo novo. Mostrado em Configurações como
-    referência pra decidir a Meta de XP."""
+    """
+    XP máximo de todo o catálogo atual, acertando tudo de primeira. É recalculado a cada chamada,
+    então acompanha novos conteúdos. Aparece em Configurações como referência para definir a Meta de
+    XP.
+    """
     return sum(xp_maximo_de_conteudo(cid, c) for cid, c in st.session_state.conteudos.items())
 
 

@@ -95,7 +95,10 @@ def renderizar_acerto_por_aluno_e_habilidade(alunos, conteudo_id=None, de="", at
         pcts = [percentual_acerto(par) for par in pares]
         linhas_txt.append([("👥 " if rotulo == "Turma" else "") + rotulo] + [texto_acerto(par) for par in pares])
         if rotulo == "Turma":
-            # A linha da turma tem o nome em cinza (para não ser confundida com um aluno) e as células na cor da faixa, em negrito, como o resumo por descritor da escola.
+            """
+            A linha da turma tem o nome em cinza (para não ser confundida com um aluno) e as células
+            na cor da faixa, em negrito, como o resumo por descritor da escola.
+            """
             linhas_css.append([ESTILO_LINHA_TURMA] + [
                 fundo_acerto(p) + "; font-weight: bold" if p is not None else ESTILO_LINHA_TURMA for p in pcts
             ])
@@ -115,8 +118,10 @@ def _desmarcar_tabela_alunos():
 
 @st.dialog("🗑️ Excluir aluno")
 def _dialog_confirmar_exclusao_alunos(nomes_alvo):
-    """Popup modal de verdade (st.dialog) em vez do aviso aparecer mais embaixo
-    na página, obrigando a rolar pra achar."""
+    """
+    Popup modal (st.dialog) em vez de um aviso mais abaixo na página, que obrigaria a rolar para
+    encontrá-lo.
+    """
     if len(nomes_alvo) == 1:
         st.warning(f"⚠️ Tem certeza que deseja excluir **{nomes_alvo[0]}** e todo o progresso dele(a)? Essa ação não pode ser desfeita.")
     else:
@@ -160,7 +165,11 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
             "Questões agrupadas pela habilidade. Quanto cada habilidade já foi concluída pela turma."
         )
         df_descritor = pd.DataFrame(linhas_descritor)
-        # Duas colunas (Conclusões, Possíveis) juntas numa só ("12/20"), do mesmo jeito que o PDF já mostra — eram números soltos aqui na tela, sem a fração que dá sentido a "Possíveis" (sem a fração, não ficava claro o que "Possíveis 20" queria dizer).
+        """
+        Duas colunas (Conclusões, Possíveis) juntas numa só ("12/20"), do mesmo jeito que o PDF já
+        mostra — eram números soltos aqui na tela, sem a fração que dá sentido a "Possíveis" (sem a
+        fração, não ficava claro o que "Possíveis 20" queria dizer).
+        """
         df_descritor_exibicao = df_descritor.copy()
         df_descritor_exibicao["Concluído (alunos × questões)"] = (
             df_descritor_exibicao["Conclusões"].astype(str) + "/" + df_descritor_exibicao["Possíveis"].astype(str)
@@ -174,7 +183,7 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
                 x=alt.X("% Concluído:Q", scale=alt.Scale(domain=[0, 100])),
                 y=alt.Y("Habilidade:N", sort=None),
                 color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                # Tooltip explícito: sem isso, o Altair mostra também "Cor" (o hexadecimal da faixa de cor) e "_Cor_sort_index" (campo interno do Vega-Lite), que não dizem nada útil.
+                # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                 tooltip=[alt.Tooltip("Habilidade:N", title="Habilidade"), alt.Tooltip("% Concluído:Q", title="% Concluído")],
             ),
             use_container_width=True,
@@ -221,7 +230,10 @@ def render_desempenho_turma():
         st.info("Nenhum aluno iniciou a avaliação ainda.")
         return
 
-    # Meta de XP: o professor define em Configurações; sem valor salvo ainda, cai pra metade do catálogo atual — um chute razoável de partida, que ele pode ajustar a qualquer momento.
+    """
+    Meta de XP definida pelo professor em Configurações; sem valor salvo, usa metade do catálogo
+    atual como ponto de partida.
+    """
     xp_catalogo_total = xp_maximo_catalogo_atual()
     meta_xp = st.session_state.config.get("meta_xp") or (xp_catalogo_total / 2)
 
@@ -229,7 +241,11 @@ def render_desempenho_turma():
     for nome, perfil in alunos.items():
         erros_totais = sum(p.get("erros", 0) for p in perfil.get("progresso", {}).values())
         xp_total = perfil.get("xp_total", 0)
-        # Cor por FAIXA DE XP (ver cor_por_xp) — nesse gráfico o comprimento da barra já É o XP, então a cor precisa falar da mesma coisa que o comprimento, senão vira duas leituras diferentes disputando o mesmo desenho (leitura confusa). Reaproveita cor_por_percentual_concluido — a MESMA função/faixa (as 4 faixas da escola) que já colore os outros gráficos do painel — em vez de uma faixa própria só pra este gráfico: um critério só pro app inteiro, mais fácil de entender e de explicar.
+        """
+        Cor por faixa de XP (ver cor_por_xp): como o comprimento da barra já é o XP, a cor segue a
+        mesma lógica. Reaproveita cor_por_percentual_concluido (as 4 faixas da escola), o mesmo
+        critério dos outros gráficos do painel.
+        """
         pct_da_meta = min(xp_total / meta_xp * 100, 100) if meta_xp else 0
         lista_geral.append({
             "Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
@@ -237,9 +253,12 @@ def render_desempenho_turma():
             "Cor": cor_por_percentual_concluido(pct_da_meta),
         })
 
-    # ---------- Abas no topo: tudo abaixo segue a aba escolhida ----------
-    # "Geral" mostra a turma em todos os conteúdos (XP, exclusão de aluno, nomes do relatório); cada conteúdo mostra só os dados dele, e o PDF sai da aba dele.
-    # on_change="rerun": só a aba aberta é calculada e enviada (as outras ficam vazias).
+    """
+    ---------- Abas no topo: tudo abaixo segue a aba escolhida ----------
+    "Geral" mostra a turma em todos os conteúdos (XP, exclusão de aluno, nomes do relatório); cada
+    conteúdo mostra só os dados dele, e o PDF sai da aba dele. on_change="rerun": só a aba aberta é
+    calculada e enviada (as outras ficam vazias).
+    """
     ids_conteudo = list(st.session_state.conteudos.keys())
     labels_abas = ["📊 Geral"] + [f"{st.session_state.conteudos[cid]['icone']} {st.session_state.conteudos[cid]['titulo']}" for cid in ids_conteudo]
     aba_geral, *abas = st.tabs(labels_abas, on_change="rerun", key="abas_detalhamento")
@@ -254,7 +273,10 @@ def render_desempenho_turma():
             colunas_visiveis = ["Aluno", "XP Total", "Erros Totais"]
             if df_geral["Nome no Relatório"].str.strip().any():
                 colunas_visiveis.insert(1, "Nome no Relatório")
-            # Tabela em HTML (título em negrito, como as outras). A exclusão deixou de ser por caixinha na tabela e passou a ser por lista de nomes, logo acima dela.
+            """
+            Tabela em HTML (título em negrito, como as outras). A exclusão é feita por uma lista de
+            nomes logo acima da tabela.
+            """
             tabela_centralizada(df_geral[colunas_visiveis])
             with espaco_botao_excluir:
                 col_nomes, col_botao = st.columns([4, 1], vertical_alignment="bottom")
@@ -270,9 +292,11 @@ def render_desempenho_turma():
                     if st.button(rotulo, key="btn_excluir_selecionados", disabled=not nomes_marcados, use_container_width=True):
                         _dialog_confirmar_exclusao_alunos(nomes_marcados)
 
-            # Editor num expander separado, e NÃO um st.data_editor no lugar da tabela acima: aquela tabela usa on_select pra escolher o aluno a excluir, e
-            # st.data_editor não tem seleção de linha — trocar uma pela outra mataria
-            # o botão de excluir aluno individual.
+            """
+            Editor em um expander separado, e não st.data_editor no lugar da tabela acima: aquela
+            tabela usa on_select para escolher o aluno a excluir, e st.data_editor não tem seleção
+            de linha.
+            """
             with st.expander("✏️ Nomes para o relatório (opcional)"):
                 st.caption(
                     "O aluno entra com um apelido inventado (Goku99, Player1, Shadow...), mas o relatório impresso "
@@ -297,7 +321,11 @@ def render_desempenho_turma():
                     flash("Salvo com sucesso!")
                     st.rerun()
 
-            # Cor por faixa de % de questões concluídas (verde/amarelo/vermelho), somando todos os conteúdos — mesma lógica e mesma técnica (Altair com domain==range) do gráfico de "Detalhamento por Conteúdo", pra não reintroduzir o bug de cor trocada do st.bar_chart(..., color=coluna).
+            """
+            Cor por faixa de % de questões concluídas (verde/amarelo/vermelho), somando todos os
+            conteúdos. Usa a mesma técnica do gráfico de Detalhamento por Conteúdo (Altair com
+            domain == range), pois st.bar_chart(..., color=coluna) pode trocar as cores.
+            """
             grafico_geral = (
                 alt.Chart(df_geral)
                 .mark_bar()
@@ -305,7 +333,7 @@ def render_desempenho_turma():
                     x=alt.X("XP Total:Q"),
                     y=alt.Y("Aluno:N", sort=None),
                     color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                    # Sem isso, o Altair mostra TODOS os campos codificados no tooltip ao passar o mouse — incluindo "Cor" (o hexadecimal por trás da faixa verde/amarelo/vermelho) e "_Cor_sort_index" (campo interno que o Vega-Lite cria sozinho pra ordenar a escala de cor). Nenhum dos dois diz algo útil pro professor; a lista explícita abaixo restringe o tooltip só ao que interessa.
+                    # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                     tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("XP Total:Q", title="XP Total")],
                 )
             )
@@ -316,7 +344,10 @@ def render_desempenho_turma():
             de, ate, sufixo, filtrado = _filtros_acerto()
             renderizar_acerto_por_aluno_e_habilidade(alunos, None, de, ate, sufixo, filtrado)
 
-            # Relatório em PDF da turma toda (todos os conteúdos somados), com os mesmos filtros da tabela acima. Os relatórios de cada conteúdo ficam nas outras abas.
+            """
+            Relatório em PDF da turma toda (todos os conteúdos somados), com os mesmos filtros da
+            tabela acima. Os relatórios de cada conteúdo ficam nas outras abas.
+            """
             linhas_geral = []
             for nome, perfil in alunos.items():
                 feitas = total_cid = erros = 0
@@ -358,7 +389,10 @@ def render_desempenho_turma():
             linhas = []
             for nome, perfil in alunos.items():
                 prog = perfil.get("progresso", {}).get(cid, {"missao_atual": 1, "erros": 0})
-                # missao_atual aponta pra próxima questão a responder (começa em 1); "concluídas" é sempre missao_atual - 1, com limite no total.
+                """
+                missao_atual aponta para a próxima questão a responder (começa em 1); "concluídas" é
+                missao_atual - 1, limitado ao total.
+                """
                 concluidas = max(prog["missao_atual"] - 1, 0)
                 concluidas = min(concluidas, total) if total else concluidas
                 linhas.append({"Aluno": nome, "Nome no Relatório": perfil.get("nome_relatorio", ""),
@@ -374,8 +408,12 @@ def render_desempenho_turma():
             if total:
                 df_conteudo["% Concluído"] = (df_conteudo["Questões Concluídas"] / total * 100).round(0)
                 df_conteudo["Cor"] = df_conteudo["% Concluído"].apply(cor_por_percentual_concluido)
-                # st.bar_chart(..., color="Cor") passava por aqui antes, mas o Vega-Lite
-                # (motor por trás) às vezes trocava verde por amarelo — ele monta a ordem das cores sozinho a partir dos valores únicos da coluna, e essa ordem podia não bater com a ordem em que os dados aparecem. Usando Altair direto com domain==range idênticos, cada cor sempre mapeia pra ela mesma não importa a ordem que o Vega-Lite decidir usar por baixo dos panos.
+                """
+                Altair direto, com domain == range idênticos, em vez de st.bar_chart(...,
+                color="Cor"): o Vega-Lite monta a ordem das cores a partir dos valores únicos da
+                coluna e podia trocar verde por amarelo. Assim cada cor sempre mapeia para ela
+                mesma.
+                """
                 grafico = (
                     alt.Chart(df_conteudo)
                     .mark_bar()
@@ -383,13 +421,16 @@ def render_desempenho_turma():
                         x=alt.X("% Concluído:Q"),
                         y=alt.Y("Aluno:N", sort=None),
                         color=alt.Color("Cor:N", scale=alt.Scale(domain=CORES_DESEMPENHO, range=CORES_DESEMPENHO), legend=None),
-                        # Tooltip explícito, mesmo motivo dos outros dois gráficos de barra colorida por faixa: sem isso, "Cor" e "_Cor_sort_index" (interno do Vega-Lite) apareciam à toa.
+                        # Tooltip explícito: evita mostrar "Cor" e "_Cor_sort_index" (campo interno do Vega-Lite).
                         tooltip=[alt.Tooltip("Aluno:N", title="Aluno"), alt.Tooltip("% Concluído:Q", title="% Concluído")],
                     )
                 )
                 st.altair_chart(grafico, use_container_width=True)
 
-            # O PDF só é gerado quando o professor clica em Exportar (data recebe uma função, não os bytes). Antes eram gerados os 10 PDFs, um por aba, a cada troca de página, e a tela ficava velha e apagada esperando.
+            """
+            O PDF só é gerado quando o professor clica em Exportar (data recebe uma função, não os
+            bytes); gerar os 10 PDFs a cada troca de página deixava a tela lenta.
+            """
             gerar_este_pdf = functools.partial(
                 gerar_pdf_relatorio,
                 lista_geral, conteudo_info["titulo"], linhas,
