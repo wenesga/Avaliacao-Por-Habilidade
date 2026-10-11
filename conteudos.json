@@ -17,7 +17,10 @@
         "resposta": "20",
         "tipo": "numero",
         "pontos": 10,
-        "descritor": "D044_M"
+        "descritores": [
+          "D044_M"
+        ],
+        "imagem": "abace30150cb.jpg"
       },
       {
         "titulo": "Equação do 1º grau",

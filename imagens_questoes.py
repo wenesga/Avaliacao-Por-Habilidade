@@ -10,6 +10,7 @@ PASTA_IMAGENS = "imagens_questoes"
 DIR_IMAGENS_GRAVACAO = os.path.join(DIR_DADOS, PASTA_IMAGENS)
 LARGURA_MAXIMA = 1400
 QUALIDADE_JPEG = 88
+LARGURA_EXIBICAO = 340  # largura (px) da imagem na tela do aluno; o botão de ampliar mostra o tamanho todo
 LIMITE_RAZAO_PNG = 3  # PNG só é usado se tiver até 3 vezes o tamanho do JPEG
 PESO_MAXIMO_JPEG = 250_000  # bytes; acima disso a qualidade é reduzida aos poucos
 QUALIDADE_JPEG_MINIMA = 60
