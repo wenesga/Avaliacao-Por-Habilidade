@@ -68,7 +68,7 @@ PAGINA_PROFESSOR = "professor"
 ABA_TEORIA = "📖 Orientações"
 
 
-ABA_MISSOES = "🎮 Questões"
+ABA_MISSOES = "📝 Questões"
 
 
 ABA_PROFESSOR_VISAO = "📊 Visão Geral"

@@ -81,7 +81,7 @@ def render_configuracoes():
         "Foco de hoje",
         options=opcoes_ids,
         format_func=lambda cid: opcoes_conteudo[cid],
-        help="Escolha a disciplina que a turma vai estudar hoje pra já preencher o campo de meta com o XP dela.",
+        help="Escolha a disciplina que a turma vai praticar hoje pra já preencher o campo de meta com o XP dela.",
         key="meta_xp_foco_selecionado",
     )
     if conteudo_foco != st.session_state.config.get("ultimo_foco_meta_xp"):

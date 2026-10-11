@@ -45,8 +45,8 @@ def render_menu_lateral():
                 st.rerun()
         else:
             """
-            "Apelido no jogo", não "Nome do Aluno": entrar com um nome inventado é parte da
-            dinâmica, não um detalhe técnico. O aluno joga sem se expor quando erra, e é o professor
+            "Apelido", não "Nome do Aluno": entrar com um nome inventado é parte da
+            dinâmica, não um detalhe técnico. O aluno responde sem se expor quando erra, e é o professor
             que liga o apelido ao nome real, na hora do relatório (ver 'Nomes para o relatório').
 
             Em st.form: sem form, o texto digitado só é sincronizado com o backend no blur/Enter do
@@ -60,7 +60,7 @@ def render_menu_lateral():
             """
             with st.form("form_login_aluno", border=False):
                 nome_digitado = st.text_input(
-                    "🎮 Seu apelido no jogo:", placeholder="Ex.: Goku99",
+                    "📝 Seu apelido:", placeholder="Ex.: Goku99",
                     help="Invente um apelido — não precisa ser seu nome de verdade. "
                          "Uma palavra só, letras e números.",
                 ).strip()

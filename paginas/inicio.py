@@ -104,7 +104,7 @@ def render_pagina_inicial():
             {logo_html}
             <p class="home-banner-titulo">Avaliação por Habilidade</p>
             <p class="home-banner-subtitulo">
-                Uma plataforma interativa para estudar Matemática e Português e mostrar à escola
+                Uma atividade interativa para praticar Matemática e Português e mostrar à escola
                 em quais habilidades cada aluno precisa de reforço.
                 {saudacao}
             </p>
@@ -127,7 +127,7 @@ def render_pagina_inicial():
         <div class="home-step-card">
             <div class="home-step-numero">Passo 1</div>
             <div class="home-step-titulo">📚 Escolha uma matéria</div>
-            <div class="home-step-texto">Clique em uma das matérias na barra lateral (ou nos cartões abaixo) para abrir a disciplina que quer estudar.</div>
+            <div class="home-step-texto">Clique em uma das matérias na barra lateral (ou nos cartões abaixo) para abrir a disciplina que quer praticar.</div>
         </div>
         """, unsafe_allow_html=True)
     with c2:
@@ -142,8 +142,8 @@ def render_pagina_inicial():
         st.markdown("""
         <div class="home-step-card">
             <div class="home-step-numero">Passo 3</div>
-            <div class="home-step-titulo">🎮 Jogue as Questões</div>
-            <div class="home-step-texto">Na própria matéria, troque para a aba Questões: responda os desafios, ganhe XP e acompanhe seu progresso.</div>
+            <div class="home-step-titulo">📝 Faça a atividade</div>
+            <div class="home-step-texto">Na própria matéria, troque para a aba Questões: responda as questões, ganhe XP e acompanhe seu progresso.</div>
         </div>
         """, unsafe_allow_html=True)
 
