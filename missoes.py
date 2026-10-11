@@ -154,7 +154,7 @@ def render_missoes_dinamicas(conteudo):
         if missao.get("imagem"):
             caminho_imagem = caminho_imagem_questao(missao["imagem"])
             if caminho_imagem:
-                st.image(caminho_imagem)
+                st.image(caminho_imagem, caption=missao.get("legenda_imagem") or None)
             else:
                 st.caption("🖼️ A imagem desta questão não está disponível.")
         tipo = missao.get("tipo", "numero")

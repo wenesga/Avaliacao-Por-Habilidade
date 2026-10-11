@@ -20,7 +20,8 @@
         "descritores": [
           "D044_M"
         ],
-        "imagem": "93924430166c.jpg"
+        "imagem": "93924430166c.jpg",
+        "legenda_imagem": "Falta só a legenda, que continua sem commit. Quer que eu faça o commit e o push?"
       },
       {
         "titulo": "Equação do 1º grau",

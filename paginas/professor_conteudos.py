@@ -88,6 +88,10 @@ def _campos_questao(prefixo, inicial):
     )
     if enviado:
         st.image(enviado, width=240)
+    legenda_imagem = st.text_input(
+        "Legenda da imagem (opcional)", value=inicial.get("legenda_imagem", ""),
+        key=f"{prefixo}_legenda_imagem", help="Texto curto que aparece embaixo da imagem.",
+    )
     tipo_atual = inicial.get("tipo", "multipla")
     tipo = st.radio(
         "Tipo de resposta", TIPOS_RESPOSTA, horizontal=True, key=f"{prefixo}_tipo",
@@ -122,6 +126,8 @@ def _campos_questao(prefixo, inicial):
         questao["alternativas"] = alternativas
     if manter_imagem:
         questao["imagem"] = imagem_atual
+    if legenda_imagem.strip() and (manter_imagem or enviado):
+        questao["legenda_imagem"] = legenda_imagem.strip()
     return questao, _erro_questao(pergunta, resposta, tipo, alternativas), enviado
 
 
