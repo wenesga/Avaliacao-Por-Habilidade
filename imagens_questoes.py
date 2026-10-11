@@ -8,9 +8,8 @@ from config import DIR_DADOS
 
 PASTA_IMAGENS = "imagens_questoes"
 DIR_IMAGENS_GRAVACAO = os.path.join(DIR_DADOS, PASTA_IMAGENS)
-LARGURA_MAXIMA = 1400
 QUALIDADE_JPEG = 88
-LARGURA_EXIBICAO = 340  # largura (px) da imagem na tela do aluno; o botão de ampliar mostra o tamanho todo
+LARGURA_EXIBICAO = 500  # largura (px) da imagem na tela do aluno
 LIMITE_RAZAO_PNG = 3  # PNG só é usado se tiver até 3 vezes o tamanho do JPEG
 PESO_MAXIMO_JPEG = 250_000  # bytes; acima disso a qualidade é reduzida aos poucos
 QUALIDADE_JPEG_MINIMA = 60
@@ -26,8 +25,10 @@ def salvar_imagem_questao(arquivo):
     """
     Reduz a imagem enviada e a grava na pasta de imagens das questões. Devolve o nome do arquivo.
 
-    A largura é limitada para a imagem carregar rápido no celular do aluno e ocupar pouco espaço no
-    repositório, sem perder a leitura de texto pequeno. Entre PNG e JPEG de boa qualidade, vale o
+    Toda imagem é ajustada aqui, com filtro de qualidade, para a mesma largura (LARGURA_EXIBICAO),
+    mantendo a proporção, e a tela a mostra sem redimensionar: se a imagem fosse maior, o Streamlit
+    a encolheria com um filtro simples e o texto ficaria embaçado. Assim todas ocupam a mesma
+    largura, qualquer que seja o tamanho do arquivo enviado. Entre PNG e JPEG de boa qualidade, vale o
     formato que dá o melhor resultado para o tipo de imagem (ver LIMITE_RAZAO_PNG). O nome vem do
     conteúdo, então a mesma imagem enviada duas vezes vira um arquivo só. Levanta ValueError se o
     arquivo não for uma imagem legível.
@@ -42,9 +43,9 @@ def salvar_imagem_questao(arquivo):
             imagem = fundo
         else:
             imagem = imagem.convert("RGB")
-        if imagem.width > LARGURA_MAXIMA:
-            altura = round(imagem.height * LARGURA_MAXIMA / imagem.width)
-            imagem = imagem.resize((LARGURA_MAXIMA, altura), Image.LANCZOS)
+        if imagem.width != LARGURA_EXIBICAO:
+            altura = round(imagem.height * LARGURA_EXIBICAO / imagem.width)
+            imagem = imagem.resize((LARGURA_EXIBICAO, altura), Image.LANCZOS)
         em_png = io.BytesIO()
         imagem.save(em_png, "PNG", optimize=True)
         qualidade = QUALIDADE_JPEG

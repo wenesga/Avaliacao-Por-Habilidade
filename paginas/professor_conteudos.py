@@ -83,8 +83,8 @@ def _campos_questao(prefixo, inicial):
     enviado = st.file_uploader(
         "Imagem do enunciado (opcional)", type=["png", "jpg", "jpeg"], key=f"{prefixo}_imagem",
         help="Use quando o enunciado fala de uma figura, gráfico ou tabela. Pode ser um arquivo "
-             "exportado de um editor de figuras. A imagem é reduzida (até 1400 px de largura) para "
-             "carregar rápido no celular. Enviar outra imagem substitui a atual.",
+             "exportado de um editor de figuras. A imagem é reduzida ao tamanho em que aparece "
+             "para o aluno, o que a deixa leve e nítida. Enviar outra imagem substitui a atual.",
     )
     if enviado:
         st.image(enviado, width=240)

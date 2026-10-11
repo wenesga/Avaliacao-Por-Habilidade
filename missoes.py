@@ -4,7 +4,7 @@ import streamlit as st
 from banco import erros_da_questao, perfil_atual, progresso_atual, registrar_tentativa_missao, salvar_perfil_e_progresso
 from config import DESCONTO_XP_POR_ERRO, PISO_XP_FRACAO
 from conteudos import obter_total_missoes
-from imagens_questoes import LARGURA_EXIBICAO, caminho_imagem_questao
+from imagens_questoes import caminho_imagem_questao
 
 
 def calcular_xp_por_desempenho(pontos_base, erros_nesta_missao):
@@ -154,7 +154,7 @@ def render_missoes_dinamicas(conteudo):
         if missao.get("imagem"):
             caminho_imagem = caminho_imagem_questao(missao["imagem"])
             if caminho_imagem:
-                st.image(caminho_imagem, width=LARGURA_EXIBICAO)
+                st.image(caminho_imagem)
             else:
                 st.caption("🖼️ A imagem desta questão não está disponível.")
         tipo = missao.get("tipo", "numero")
