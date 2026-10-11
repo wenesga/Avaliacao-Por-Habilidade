@@ -7,7 +7,7 @@ import streamlit as st
 import time
 from datetime import datetime, timedelta, timezone
 from config import ARQUIVO_ALUNOS, ARQUIVO_ALUNOS_DB
-from descritores import obter_descritor_missao
+from descritores import obter_descritores_missao
 
 
 """
@@ -380,8 +380,9 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
     (AAAA-MM-DD) da primeira tentativa gravada, ou '' se não há nenhuma.
 
     Só a primeira tentativa de cada questão conta: acertou de primeira = 1 acerto; errou, mesmo que
-    depois acerte, = 0. O segundo número é quantas questões do descritor o aluno já respondeu. As
-    tentativas seguintes são treino e não entram. Só entram questões com descritor mapeado.
+    depois acerte, = 0. O segundo número é quantas questões do descritor o aluno já respondeu. Uma
+    questão com mais de um descritor conta, com o mesmo resultado, em cada um deles. As
+    tentativas seguintes são prática e não entram. Só entram questões com descritor mapeado.
     """
     acertos = {}
     desde = ""
@@ -411,12 +412,12 @@ def acerto_por_aluno_e_habilidade(conteudo_id=None, de="", ate="", sufixo=""):
             continue
         if not desde or linha["momento"] < desde:
             desde = linha["momento"]
-        habilidade = obter_descritor_missao(linha["conteudo_id"], linha["missao"])
-        if not habilidade or (sufixo and not habilidade.endswith(sufixo)):
-            continue
-        par = acertos.setdefault((linha["aluno"], habilidade), [0, 0])
-        par[0] += linha["acertou"]
-        par[1] += 1
+        for habilidade in obter_descritores_missao(linha["conteudo_id"], linha["missao"]):
+            if sufixo and not habilidade.endswith(sufixo):
+                continue
+            par = acertos.setdefault((linha["aluno"], habilidade), [0, 0])
+            par[0] += linha["acertou"]
+            par[1] += 1
     return acertos, desde
 
 

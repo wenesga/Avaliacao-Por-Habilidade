@@ -26,7 +26,7 @@ def salvar_conteudos(conteudos):
 def xp_maximo_de_conteudo(cid, c):
     """
     XP máximo de um conteúdo cadastrado, acertando tudo de primeira (soma o "Pontos (XP)" de cada
-    questão). Usado no badge "Total X XP" de cada card (Gerenciar Conteúdos) e no seletor de "Meta
+    questão). Usado no badge "Total X XP" de cada card (Gerenciar Questões) e no seletor de "Meta
     de XP" em Configurações.
     """
     return sum(m.get("pontos", 10) for m in c.get("missoes", []))

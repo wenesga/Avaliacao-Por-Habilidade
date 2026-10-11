@@ -149,7 +149,7 @@ def renderizar_desempenho_por_habilidade(alunos, conteudo_id=None):
         st.info(
             "Nenhuma questão foi mapeada para uma habilidade ainda. "
             "Preencha o campo **Habilidade** ao cadastrar ou editar as questões, "
-            "em ➕ Gerenciar Conteúdos, para que este relatório seja gerado."
+            "em ➕ Gerenciar Questões, para que este relatório seja gerado."
         )
     else:
         st.caption(

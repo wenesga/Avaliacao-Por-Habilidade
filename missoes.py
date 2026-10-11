@@ -123,7 +123,8 @@ def render_missoes_dinamicas(conteudo):
                 texto += "  \n" + mensagem
             st.success(texto)
         else:
-            st.markdown(f"### 📍 Questão {idx}: {missao.get('titulo', f'Desafio {idx}')}")
+            titulo = missao.get("titulo", "")
+            st.markdown(f"### 📍 Questão {idx}" + (f": {titulo}" if titulo else ""))
             st.write(missao.get("pergunta", ""))
             tipo = missao.get("tipo", "numero")
             if tipo == "multipla":

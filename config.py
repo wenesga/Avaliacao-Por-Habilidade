@@ -74,7 +74,7 @@ ABA_MISSOES = "🎮 Questões"
 ABA_PROFESSOR_VISAO = "📊 Visão Geral"
 
 
-ABA_PROFESSOR_CONTEUDOS = "➕ Gerenciar Conteúdos"
+ABA_PROFESSOR_CONTEUDOS = "➕ Gerenciar Questões"
 
 
 ABA_PROFESSOR_CONFIG = "⚙️ Configurações"

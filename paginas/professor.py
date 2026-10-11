@@ -52,7 +52,7 @@ def render_pagina_professor():
         Botões em vez de st.tabs(): a seleção do st.tabs() é client-side e volta pra primeira aba
         sozinha quando a árvore de elementos muda — e é exatamente o que acontece aqui (o formulário
         de editar conteúdo desaparece da tela ao salvar). Caso típico: editar um conteúdo, salvar, e
-        cair de volta em "Visão Geral" em vez de continuar em "Gerenciar Conteúdos". Mesmo padrão e
+        cair de volta em "Visão Geral" em vez de continuar em "Gerenciar Questões". Mesmo padrão e
         mesmo motivo do toggle Teoria/Questões (ver ir_para_materia).
         """
         col_ab1, col_ab2, col_ab3 = st.columns(3)
