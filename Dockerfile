@@ -15,6 +15,7 @@ COPY paginas ./paginas
 COPY .streamlit ./.streamlit
 COPY fonts ./fonts
 COPY imagens ./imagens
+COPY imagens_questoes ./imagens_questoes
 COPY static ./static
 
 # Valores iniciais: só são copiados pro volume se ele ainda não tiver o arquivo.

@@ -3,6 +3,7 @@
 import streamlit as st
 from conteudos import salvar_conteudos, xp_maximo_de_conteudo
 from descritores import campo_descritores, descritores_da_missao
+from imagens_questoes import caminho_imagem_questao, salvar_imagem_questao
 from sessao import flash
 
 TIPOS_RESPOSTA = ["multipla", "numero", "texto"]
@@ -70,6 +71,23 @@ def _campos_questao(prefixo, inicial):
         "Enunciado da questão", value=inicial.get("pergunta", ""), key=f"{prefixo}_pergunta",
         help=AJUDA_ENUNCIADO,
     )
+    imagem_atual = inicial.get("imagem", "")
+    manter_imagem = bool(imagem_atual)
+    if imagem_atual:
+        caminho_atual = caminho_imagem_questao(imagem_atual)
+        if caminho_atual:
+            st.image(caminho_atual, width=240)
+        else:
+            st.caption("A imagem desta questão não foi encontrada neste servidor.")
+        manter_imagem = not st.checkbox("Remover a imagem do enunciado", key=f"{prefixo}_remover_imagem")
+    enviado = st.file_uploader(
+        "Imagem do enunciado (opcional)", type=["png", "jpg", "jpeg"], key=f"{prefixo}_imagem",
+        help="Use quando o enunciado fala de uma figura, gráfico ou tabela. Pode ser um arquivo "
+             "exportado de um editor de figuras. A imagem é reduzida (até 1400 px de largura) para "
+             "carregar rápido no celular. Enviar outra imagem substitui a atual.",
+    )
+    if enviado:
+        st.image(enviado, width=240)
     tipo_atual = inicial.get("tipo", "multipla")
     tipo = st.radio(
         "Tipo de resposta", TIPOS_RESPOSTA, horizontal=True, key=f"{prefixo}_tipo",
@@ -102,7 +120,20 @@ def _campos_questao(prefixo, inicial):
     }
     if tipo == "multipla":
         questao["alternativas"] = alternativas
-    return questao, _erro_questao(pergunta, resposta, tipo, alternativas)
+    if manter_imagem:
+        questao["imagem"] = imagem_atual
+    return questao, _erro_questao(pergunta, resposta, tipo, alternativas), enviado
+
+
+def _anexar_imagem(questao, enviado):
+    """Grava a imagem enviada e põe o nome na questão. Devolve o texto do erro, se houver."""
+    if enviado is None:
+        return ""
+    try:
+        questao["imagem"] = salvar_imagem_questao(enviado)
+    except ValueError:
+        return "Não foi possível ler a imagem. Envie um arquivo PNG ou JPG."
+    return ""
 
 
 def _form_adicionar_questao():
@@ -117,8 +148,9 @@ def _form_adicionar_questao():
         "Disciplina", list(st.session_state.conteudos), horizontal=True,
         key="disciplina_nova_questao", format_func=_rotulo_disciplina,
     )
-    questao, erro = _campos_questao(f"nova_questao_{versao}", {})
+    questao, erro, enviado = _campos_questao(f"nova_questao_{versao}", {})
     if st.button("➕ Adicionar questão", type="primary", key="btn_adicionar_questao"):
+        erro = erro or _anexar_imagem(questao, enviado)
         if erro:
             st.error(erro)
             return
@@ -153,10 +185,11 @@ def _dialog_excluir_questao(cid, indice):
 
 def _editor_questao(cid, indice):
     questao_atual = st.session_state.conteudos[cid]["missoes"][indice]
-    questao, erro = _campos_questao(f"edit_questao_{cid}_{indice}", questao_atual)
+    questao, erro, enviado = _campos_questao(f"edit_questao_{cid}_{indice}", questao_atual)
     col_salvar, col_cancelar, _ = st.columns([1, 1, 3])
     with col_salvar:
         if st.button("💾 Salvar", type="primary", key=f"salvar_q_{cid}_{indice}"):
+            erro = erro or _anexar_imagem(questao, enviado)
             if erro:
                 st.error(erro)
             else:
@@ -180,6 +213,8 @@ def _linha_questao(cid, indice, questao):
             st.text(f"{indice + 1}. {resumo}")
             detalhes = [ROTULOS_TIPO.get(questao.get("tipo", "numero"), ""), f"{questao.get('pontos', 10)} XP"]
             detalhes.append("🎯 " + ", ".join(codigos) if codigos else "sem descritor")
+            if questao.get("imagem"):
+                detalhes.append("🖼️ com imagem")
             st.caption(" · ".join(d for d in detalhes if d))
         with col_editar:
             if st.button("✏️", key=f"edit_q_{cid}_{indice}", help="Editar questão"):
