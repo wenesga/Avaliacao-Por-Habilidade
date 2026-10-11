@@ -3,6 +3,7 @@
 import streamlit as st
 from banco import erros_da_questao, perfil_atual, progresso_atual, registrar_tentativa_missao, salvar_perfil_e_progresso
 from config import DESCONTO_XP_POR_ERRO, PISO_XP_FRACAO
+from conteudos import obter_total_missoes
 
 
 def calcular_xp_por_desempenho(pontos_base, erros_nesta_missao):
@@ -18,11 +19,14 @@ def calcular_xp_por_desempenho(pontos_base, erros_nesta_missao):
     return max(round(pontos_base * fracao), 1)
 
 
-def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, pontos, tipo="numero"):
+def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, pontos, tipo="numero",
+                       aviso=None):
+    """`aviso` é o container onde os avisos de erro aparecem; sem ele, usa o ponto atual da página."""
+    aviso = aviso if aviso is not None else st
     if st.button("Verificar Resposta", key=f"btn_{conteudo_id}_{missao_id}"):
         if resposta_aluno is None or str(resposta_aluno).strip() == "":
-            st.error("⚠️ Escolha uma alternativa antes de verificar!" if tipo == "multipla"
-                     else "⚠️ Digite um valor antes de verificar!")
+            aviso.error("⚠️ Escolha uma alternativa antes de verificar!" if tipo == "multipla"
+                        else "⚠️ Digite um valor antes de verificar!")
             return
 
         acertou = False
@@ -86,6 +90,8 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
             """
             prog["missao_atual"] = len(prog["respostas"]) + 1
             st.session_state[f"ultima_questao_{conteudo_id}"] = missao_id
+            if len(prog["respostas"]) >= obter_total_missoes(conteudo_id):
+                st.session_state[f"festejar_{conteudo_id}"] = True
             salvar_perfil_e_progresso(nome_aluno, conteudo_id, perfil, prog)
             st.rerun()
         else:
@@ -98,13 +104,19 @@ def verificar_resposta(conteudo_id, missao_id, resposta_aluno, resposta_certa, p
             acerto de antes, não só somar mais uma mensagem em cima.
             """
             st.session_state.pop(f"ultimo_resultado_{conteudo_id}", None)
-            st.error("❌ Resposta incorreta. Revise o conteúdo e tente de novo!")
+            aviso.error("❌ Resposta incorreta. Revise o conteúdo e tente de novo, ou vá para a próxima.")
+
+
+def _ir_para_questao(cid, indice):
+    st.session_state[f"questao_atual_{cid}"] = indice
 
 
 def render_missoes_dinamicas(conteudo):
-    """Todas as questões ficam visíveis, e o aluno responde na ordem que quiser.
-    A questão já concluída vira uma linha verde com a resposta; a que falta mostra
-    o enunciado e o botão. O XP ganho aparece na linha da questão que acabou de ser feita."""
+    """
+    Mostra uma questão por vez, com os botões Anterior e Próxima. Avançar e voltar não dependem de
+    acertar: o aluno que não consegue resolver uma questão pode seguir para a próxima e voltar
+    depois. A questão já concluída vira uma linha verde com a resposta, e o XP ganho aparece nela.
+    """
     cid = st.session_state.conteudo_ativo
     missoes = conteudo.get("missoes", [])
     prog = progresso_atual(cid)
@@ -114,35 +126,63 @@ def render_missoes_dinamicas(conteudo):
         st.info("📭 Este conteúdo ainda não possui questões cadastradas. Peça ao professor para adicioná-las no Painel do Professor.")
         return
 
-    ultima = st.session_state.get(f"ultima_questao_{cid}")
-    mensagem = st.session_state.get(f"ultimo_resultado_{cid}")
-    for idx, missao in enumerate(missoes, start=1):
-        if str(idx) in respostas:
-            texto = f"✅ Questão {idx} Concluída! (Resposta: {respostas[str(idx)]})"
-            if ultima == idx and mensagem:
-                texto += "  \n" + mensagem
-            st.success(texto)
-        else:
-            titulo = missao.get("titulo", "")
-            st.markdown(f"### 📍 Questão {idx}" + (f": {titulo}" if titulo else ""))
-            st.write(missao.get("pergunta", ""))
-            tipo = missao.get("tipo", "numero")
-            if tipo == "multipla":
-                """
-                index=None começa a questão sem alternativa marcada; com a primeira pré-selecionada,
-                o aluno poderia verificar sem ter escolhido e levar um erro que não foi escolha
-                dele.
-                """
-                resposta = st.radio(
-                    "Escolha uma alternativa:", missao.get("alternativas", []),
-                    index=None, key=f"in_{cid}_{idx}",
-                )
-            elif tipo == "numero":
-                resposta = st.number_input("Sua resposta:", step=0.1, value=None, key=f"in_{cid}_{idx}")
-            else:
-                resposta = st.text_input("Sua resposta:", key=f"in_{cid}_{idx}")
-            verificar_resposta(cid, idx, resposta, missao.get("resposta"), missao.get("pontos", 10), tipo=tipo)
+    total = len(missoes)
+    chave = f"questao_atual_{cid}"
+    if chave not in st.session_state:
+        # Abre na primeira questão que o aluno ainda não concluiu.
+        st.session_state[chave] = next((i for i in range(1, total + 1) if str(i) not in respostas), 1)
+    idx = min(max(int(st.session_state[chave]), 1), total)
+    st.session_state[chave] = idx
+    missao = missoes[idx - 1]
+    concluida = str(idx) in respostas
 
-    if len(respostas) >= len(missoes):
-        st.balloons()
+    st.caption(f"Questão {idx} de {total} · {len(respostas)} concluída(s)")
+
+    if concluida:
+        ultima = st.session_state.get(f"ultima_questao_{cid}")
+        mensagem = st.session_state.get(f"ultimo_resultado_{cid}")
+        texto = f"✅ Questão {idx} Concluída! (Resposta: {respostas[str(idx)]})"
+        if ultima == idx and mensagem:
+            texto += "  \n" + mensagem
+        st.success(texto)
+        resposta = tipo = None
+    else:
+        titulo = missao.get("titulo", "")
+        st.markdown(f"### 📍 Questão {idx}" + (f": {titulo}" if titulo else ""))
+        st.write(missao.get("pergunta", ""))
+        tipo = missao.get("tipo", "numero")
+        if tipo == "multipla":
+            """
+            index=None começa a questão sem alternativa marcada; com a primeira pré-selecionada,
+            o aluno poderia verificar sem ter escolhido e levar um erro que não foi escolha
+            dele.
+            """
+            resposta = st.radio(
+                "Escolha uma alternativa:", missao.get("alternativas", []),
+                index=None, key=f"in_{cid}_{idx}",
+            )
+        elif tipo == "numero":
+            resposta = st.number_input("Sua resposta:", step=0.1, value=None, key=f"in_{cid}_{idx}")
+        else:
+            resposta = st.text_input("Sua resposta:", key=f"in_{cid}_{idx}")
+
+    # O container de avisos fica abaixo da linha de botões, para os avisos não ficarem presos à coluna estreita.
+    colunas = st.columns([2, 2, 1.3, 1.3])
+    aviso = st.container()
+    if not concluida:
+        with colunas[0]:
+            verificar_resposta(cid, idx, resposta, missao.get("resposta"), missao.get("pontos", 10),
+                               tipo=tipo, aviso=aviso)
+
+    with colunas[2]:
+        st.button("← Anterior", key=f"ant_{cid}", disabled=idx <= 1, use_container_width=True,
+                  on_click=_ir_para_questao, args=(cid, idx - 1))
+    with colunas[3]:
+        st.button("Próxima →", key=f"prox_{cid}", disabled=idx >= total, use_container_width=True,
+                  type="primary" if concluida else "secondary",
+                  on_click=_ir_para_questao, args=(cid, idx + 1))
+
+    if len(respostas) >= total:
+        if st.session_state.pop(f"festejar_{cid}", False):
+            st.balloons()
         st.success("🏆 PARABÉNS! Você concluiu todas as questões desta disciplina!")

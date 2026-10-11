@@ -2,7 +2,7 @@
 
 import streamlit as st
 from conteudos import salvar_conteudos, xp_maximo_de_conteudo
-from descritores import campo_descritores, descritores_da_missao, descritores_do_conteudo
+from descritores import campo_descritores, descritores_da_missao
 from sessao import flash
 
 TIPOS_RESPOSTA = ["multipla", "numero", "texto"]
@@ -212,9 +212,6 @@ def _card_disciplina(cid):
 
         badges = [f'<span class="badge-conteudo badge-conteudo-tipo">🧩 {len(missoes)} questão(ões)</span>',
                   f'<span class="badge-conteudo badge-conteudo-tipo">💯 Total {xp_maximo_de_conteudo(cid, c)} XP</span>']
-        habilidades = descritores_do_conteudo(cid, c)
-        if habilidades:
-            badges.append(f'<span class="badge-conteudo badge-conteudo-descritor">🎯 Habilidades: {", ".join(habilidades)}</span>')
         st.markdown(" ".join(badges), unsafe_allow_html=True)
 
         with st.expander(f"Ver as {len(missoes)} questões", expanded=bool(em_edicao and em_edicao[0] == cid)):
