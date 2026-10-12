@@ -6,12 +6,15 @@ Sistema web com atividades gamificadas de prática para o SAETO (Matemática e P
 
 📌 *Protótipo de proposta de intervenção do Estágio Supervisionado IV (Gestão Escolar), Licenciatura em Computação, UFT/UAB.*
 
+🔗 **Demonstração**: https://avaliacao-por-habilidade.streamlit.app/
+
 ---
 
 ## ✨ O que ele faz
 
 - 📝 **Questões por descritor**: o professor adiciona cada questão direto em Matemática ou Português (múltipla escolha ou resposta única) e a liga a um ou mais descritores do SAETO (como `D044_M`), escolhidos numa lista pesquisável.
-- 📱 **Resposta com correção na hora**: o aluno entra com um apelido, responde e já sabe se acertou.
+- 🖼️ **Imagem e legenda**: a questão pode ter uma imagem, reduzida automaticamente, e uma legenda opcional.
+- 📱 **Resposta com correção na hora**: o aluno entra com um apelido e responde uma questão por vez, com os botões Anterior e Próxima. Ele pode avançar sem acertar e voltar depois.
 - 🟢🟡🔴 **Tabela de acerto por habilidade**: um aluno por linha, um descritor por coluna, nas 4 faixas da escola:
   - 🔴 **Baixo**: até 40%;
   - 🟠 **Médio baixo**: de 41% a 60%;
@@ -19,12 +22,11 @@ Sistema web com atividades gamificadas de prática para o SAETO (Matemática e P
   - 🟢 **Alto**: 80% ou mais.
 - 🗓️ **Filtros** por período e por disciplina (Matemática ou Português).
 - 👥 **Linha da turma**: o acerto da turma inteira em cada habilidade, no topo da tabela.
-- 📄 **Relatório em PDF**: exportado por conteúdo, pronto para imprimir ou levar à reunião pedagógica.
+- 📄 **Relatório em PDF**: da turma toda ou de cada disciplina, pronto para imprimir ou levar à reunião pedagógica.
 
 ## 🛣️ Próximos passos
 
 - 🧪 Piloto com o **8º ano, em Matemática**.
-- 🗓️ Usar as datas reais dos bimestres da escola no filtro de período.
 
 ## 🚀 Como rodar
 
