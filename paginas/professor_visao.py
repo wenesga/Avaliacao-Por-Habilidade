@@ -8,7 +8,7 @@ import streamlit as st
 from datetime import date, timedelta
 from banco import dia_de_hoje_brasilia, acerto_por_aluno_e_habilidade, carregar_todos_alunos_do_banco, contar_acessos, excluir_alunos, limpar_banco, salvar_nomes_relatorio
 from config import BIMESTRES, DISCIPLINAS, ESTILO_LINHA_TURMA
-from conteudos import obter_total_missoes, xp_maximo_catalogo_atual
+from conteudos import meta_xp_efetiva, obter_total_missoes
 from faixas import CORES_DESEMPENHO, LEGENDA_FAIXAS, cor_por_percentual_concluido, fundo_acerto, percentual_acerto, texto_acerto
 from descritores import desempenho_por_descritor
 from relatorio_pdf import formatar_data_relatorio, gerar_pdf_relatorio, nome_de_arquivo
@@ -220,8 +220,7 @@ def render_desempenho_turma():
         st.info("Nenhum aluno iniciou a avaliação ainda.")
         return
 
-    xp_catalogo_total = xp_maximo_catalogo_atual()
-    meta_xp = st.session_state.config.get("meta_xp") or (xp_catalogo_total / 2)
+    meta_xp = meta_xp_efetiva(st.session_state.config)
 
     lista_geral = []
     for nome, perfil in alunos.items():

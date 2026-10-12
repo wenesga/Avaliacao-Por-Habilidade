@@ -41,6 +41,21 @@ def xp_maximo_catalogo_atual():
     return sum(xp_maximo_de_conteudo(cid, c) for cid, c in st.session_state.conteudos.items())
 
 
+def meta_xp_efetiva(config):
+    """
+    Meta de XP em vigor: o valor que o professor salvou, ou, se não houver, o XP total do foco
+    escolhido (todas as disciplinas ou uma). Sem valor salvo, a meta acompanha as questões
+    cadastradas.
+    """
+    if config.get("meta_xp"):
+        return int(config["meta_xp"])
+    foco = config.get("ultimo_foco_meta_xp", "__catalogo__")
+    conteudos = st.session_state.conteudos
+    if foco in conteudos:
+        return xp_maximo_de_conteudo(foco, conteudos[foco])
+    return xp_maximo_catalogo_atual()
+
+
 def obter_total_missoes(conteudo_id):
     conteudo = st.session_state.conteudos.get(conteudo_id, {})
     return len(conteudo.get("missoes", []))

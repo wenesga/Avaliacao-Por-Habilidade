@@ -86,6 +86,7 @@ def render_configuracoes():
     )
     if conteudo_foco != st.session_state.config.get("ultimo_foco_meta_xp"):
         st.session_state.config["ultimo_foco_meta_xp"] = conteudo_foco
+        st.session_state.config.pop("meta_xp", None)  # trocar o foco volta a meta para o total dele
         salvar_config(st.session_state.config)
     if conteudo_foco == "__catalogo__":
         # Todas as disciplinas: a meta já vem com a SOMA delas (Matemática + Português).
@@ -105,11 +106,14 @@ def render_configuracoes():
         meta_xp_input = st.number_input(
             "Meta de XP",
             min_value=1, step=10,
-            value=int(valor_padrao_meta),
+            value=int(st.session_state.config.get("meta_xp") or valor_padrao_meta),
             key=f"meta_xp_input_{conteudo_foco}",
         )
         if st.form_submit_button("Salvar"):
-            st.session_state.config["meta_xp"] = int(meta_xp_input)
+            if int(meta_xp_input) == int(valor_padrao_meta):
+                st.session_state.config.pop("meta_xp", None)  # igual ao total: segue as questões cadastradas
+            else:
+                st.session_state.config["meta_xp"] = int(meta_xp_input)
             salvar_config(st.session_state.config)
             flash("Salvo com sucesso!")
             st.rerun()
