@@ -2,9 +2,9 @@
 
 > *Saber **em qual habilidade** cada aluno precisa de ajuda.*
 
-Sistema web com atividades gamificadas de prática para o SAETO (Matemática e Português). Os alunos respondem a questões de provas anteriores ligadas aos descritores da prova, com pontuação. O painel do professor mostra o acerto de cada aluno em cada descritor, para identificar quem tem defasagem e em qual habilidade e fazer o reforço antes da prova real.
+Sistema web com atividades gamificadas de prática para o SAETO (Matemática e Português). Os alunos respondem a questões de provas anteriores ligadas aos descritores da prova, com pontuação. O painel do professor mostra o acerto de cada aluno em cada descritor, para identificar quem tem defasagem e em qual habilidade e fazer o reforço antes da aplicação do SAETO.
 
-📌 *Protótipo de proposta de intervenção do Estágio Supervisionado IV (Gestão Escolar), Licenciatura em Computação, UFT/UAB.*
+📌 *Protótipo de proposta de intervenção do Estágio Supervisionado (Gestão Escolar), Licenciatura em Computação, UFT/UAB.*
 
 🔗 **Demonstração**: https://avaliacao-por-habilidade.streamlit.app/
 
