@@ -26,7 +26,7 @@ from paginas.inicio import render_pagina_inicial
 from paginas.materia import render_pagina_materia
 from paginas.menu import render_menu_lateral
 from paginas.professor import render_pagina_professor
-from sessao import inicializar_estado, renderizar_flash_pendente
+from sessao import guardar_navegacao_na_url, inicializar_estado, renderizar_flash_pendente
 
 aplicar_injecoes()
 inicializar_banco_db()
@@ -47,6 +47,8 @@ elif pagina == PAGINA_MATERIA:
     render_pagina_materia()
 elif pagina == PAGINA_PROFESSOR:
     render_pagina_professor()
+
+guardar_navegacao_na_url()
 
 # Rodar com "python app.py" abre o Streamlit sozinho.
 if __name__ == '__main__':

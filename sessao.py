@@ -3,12 +3,46 @@
 import streamlit as st
 import time
 from banco import carregar_perfil_aluno
-from config import ABA_PROFESSOR_VISAO, ABA_TEORIA, MINUTOS_SESSAO_PROFESSOR, PAGINA_INICIO, PAGINA_MATERIA, PAGINA_PROFESSOR, TAMANHO_MAX_APELIDO, TAMANHO_MIN_APELIDO
+from config import ABA_MISSOES, ABA_PROFESSOR_VISAO, ABA_TEORIA, MINUTOS_SESSAO_PROFESSOR, PAGINA_INICIO, PAGINA_MATERIA, PAGINA_PROFESSOR, TAMANHO_MAX_APELIDO, TAMANHO_MIN_APELIDO
 from configuracao import carregar_config
 from conteudos import carregar_conteudos
 
 
+ABAS_NA_URL = {"orientacoes": ABA_TEORIA, "questoes": ABA_MISSOES}
+
+
+def restaurar_navegacao_da_url():
+    """
+    Lê a tela do endereço (?pagina=materia&materia=...&aba=questoes) ao abrir a sessão, para que
+    atualizar a página (F5) volte à mesma tela. Valores inválidos caem na página inicial. Só a tela
+    vai para o endereço: apelido e login do professor ficam fora dele.
+    """
+    params = st.query_params
+    pagina = params.get("pagina", PAGINA_INICIO)
+    if pagina == PAGINA_PROFESSOR:
+        st.session_state.pagina = PAGINA_PROFESSOR
+    elif pagina == PAGINA_MATERIA and params.get("materia") in st.session_state.conteudos:
+        st.session_state.pagina = PAGINA_MATERIA
+        st.session_state.conteudo_ativo = params["materia"]
+        st.session_state.aba_materia = ABAS_NA_URL.get(params.get("aba"), ABA_TEORIA)
+
+
+def guardar_navegacao_na_url():
+    """Escreve a tela atual no endereço; chamado no fim de cada execução do script."""
+    alvo = {}
+    if st.session_state.pagina == PAGINA_PROFESSOR:
+        alvo["pagina"] = PAGINA_PROFESSOR
+    elif st.session_state.pagina == PAGINA_MATERIA:
+        alvo["pagina"] = PAGINA_MATERIA
+        alvo["materia"] = st.session_state.conteudo_ativo
+        alvo["aba"] = next((k for k, v in ABAS_NA_URL.items() if v == st.session_state.aba_materia), "orientacoes")
+    if dict(st.query_params) != alvo:
+        st.query_params.clear()
+        st.query_params.update(alvo)
+
+
 def inicializar_estado():
+    primeira_execucao = 'pagina' not in st.session_state
     if 'conteudos' not in st.session_state: st.session_state.conteudos = carregar_conteudos()
     if 'config' not in st.session_state: st.session_state.config = carregar_config()
     if 'aluno_ativo' not in st.session_state: st.session_state.aluno_ativo = ""
@@ -23,6 +57,8 @@ def inicializar_estado():
     if 'aba_professor' not in st.session_state: st.session_state.aba_professor = ABA_PROFESSOR_VISAO
     if 'novas_secoes_teoria' not in st.session_state: st.session_state.novas_secoes_teoria = []
     if 'novas_missoes' not in st.session_state: st.session_state.novas_missoes = []
+    if primeira_execucao:
+        restaurar_navegacao_da_url()
 
 
 def sessao_professor_ativa():
