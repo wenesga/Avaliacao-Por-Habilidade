@@ -12,7 +12,7 @@ Sistema web com atividades gamificadas de prática para o SAETO (Matemática e P
 
 ## ✨ O que ele faz
 
-- 📝 **Questões por descritor**: o professor adiciona cada questão direto em Matemática ou Português (múltipla escolha ou resposta única) e a liga a um ou mais descritores do SAETO (como `D044_M`), escolhidos numa lista pesquisável.
+- 📝 **Questões por descritor**: o professor adiciona cada questão direto em Matemática ou Português (múltipla escolha ou resposta única) e a liga a um descritor do SAETO (como `D044_M`), escolhido numa lista pesquisável.
 - 🖼️ **Imagem e legenda** opcionais na questão.
 - 📱 **Resposta com correção na hora**: o aluno entra com um apelido e responde uma questão por vez, podendo avançar e voltar.
 - 🟢🟡🔴 **Tabela de acerto por habilidade**: um aluno por linha, um descritor por coluna, nas 4 faixas da escola:

@@ -47,7 +47,8 @@ def render_placar_turma():
 
 def renderizar_grade_cartoes(cartoes, prefixo_key):
     """
-    Grade de cartões (ícone, título, descrição, botão "Acessar →"), 3 por linha. cartoes é uma lista
+    Grade de cartões (ícone, título, descrição, botão "Acessar →"), até 3 por linha; com 1 ou 2
+    cartões, eles ocupam a largura toda. cartoes é uma lista
     de dicts {icone, titulo, descricao, on_click, progresso}. on_click é uma função sem argumento
     chamada ao clicar (abre uma matéria ou o hub de Estatística). "progresso" é opcional ("3/8" ou
     "✓") e mostra quantas questões daquele card já foram concluídas, pois o "8/44" do menu lateral
@@ -56,9 +57,10 @@ def renderizar_grade_cartoes(cartoes, prefixo_key):
     Usada nos "Conteúdos disponíveis" da Início e nos 6 sub-temas do hub de Estatística; prefixo_key
     garante keys únicas quando a mesma matéria aparece nas duas telas.
     """
-    for inicio_linha in range(0, len(cartoes), 3):
-        colunas = st.columns(3)
-        for i, cartao in enumerate(cartoes[inicio_linha:inicio_linha + 3]):
+    por_linha = max(1, min(3, len(cartoes)))
+    for inicio_linha in range(0, len(cartoes), por_linha):
+        colunas = st.columns(por_linha)
+        for i, cartao in enumerate(cartoes[inicio_linha:inicio_linha + por_linha]):
             idx_global = inicio_linha + i
             cor = PALETA_CORES_CARTAO[idx_global % len(PALETA_CORES_CARTAO)]
             with colunas[i]:

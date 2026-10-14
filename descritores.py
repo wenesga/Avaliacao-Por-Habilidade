@@ -62,10 +62,10 @@ def descricao_curta_descritor(codigo, limite=85):
     return texto[:limite].rsplit(" ", 1)[0].rstrip(",;:") + "…"
 
 
-def campo_descritores(rotulo, valores_atuais=(), chave=None, ajuda=""):
-    """Campo de descritores SAETO: seleção múltipla pesquisável (código + descrição) quando
-    o banco existe; texto livre, com códigos separados por vírgula, quando não.
-    Devolve a lista de códigos."""
+def campo_descritores(rotulo, valores_atuais=(), chave=None, ajuda="", maximo=None):
+    """Campo de descritores SAETO: seleção pesquisável (código + descrição) quando o banco
+    existe; texto livre, com códigos separados por vírgula, quando não. `maximo` limita quantos
+    podem ser escolhidos na seleção. Devolve a lista de códigos."""
     habilidades = carregar_descritores()
     atuais = [str(v).strip() for v in valores_atuais if str(v).strip()]
     if not habilidades:
@@ -76,7 +76,7 @@ def campo_descritores(rotulo, valores_atuais=(), chave=None, ajuda=""):
     opcoes = sorted(habilidades)
     opcoes += [c for c in atuais if c not in habilidades]  # código digitado à mão: não some do cadastro
     escolhidos = st.multiselect(
-        rotulo, opcoes, default=atuais, key=chave, help=ajuda,
+        rotulo, opcoes, default=atuais, key=chave, help=ajuda, max_selections=maximo,
         # Rótulo com a descrição inteira, pois o Streamlit só pesquisa dentro do rótulo.
         format_func=lambda c: f"{c} · {habilidades[c]}" if c in habilidades else c,
         placeholder="Digite o código ou uma palavra da habilidade",

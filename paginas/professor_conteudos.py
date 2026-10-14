@@ -14,9 +14,9 @@ AJUDA_ENUNCIADO = (
     "matemática e o texto entre dois cifrões desaparece da tela."
 )
 AJUDA_DESCRITORES = (
-    "Descritores do SAETO (como D044_M) que esta questão exercita. Marque só os que a questão "
-    "realmente exige: o acerto e o erro contam em todos. Pode digitar um código que não está na "
-    "lista. É o que permite ao Painel do Professor relatar o desempenho por habilidade."
+    "Descritor do SAETO (como D044_M) que esta questão exercita. Cada questão tem um só, para que o "
+    "erro indique qual habilidade falhou. Pode digitar um código que não está na lista. É o que "
+    "permite ao Painel do Professor relatar o desempenho por habilidade."
 )
 
 
@@ -43,12 +43,12 @@ def _erro_questao(pergunta, resposta, tipo, alternativas, descritores):
     """Texto do problema que impede de gravar a questão; vazio se está válida.
 
     Validado no cadastro, e não na aula: uma múltipla escolha sem alternativas, ou cuja resposta
-    correta não esteja entre elas, seria impossível de acertar. Sem descritor, a questão não entra
-    na tabela de acerto por habilidade."""
+    correta não esteja entre elas, seria impossível de acertar. A questão tem um descritor só: com
+    mais de um, o erro não indicaria qual habilidade falhou."""
     if not (pergunta.strip() and resposta.strip()):
         return "Preencha o enunciado e a resposta correta."
-    if not descritores:
-        return "Marque pelo menos um descritor do SAETO."
+    if len(descritores) != 1:
+        return "Escolha um descritor do SAETO para a questão."
     if tipo == "multipla":
         if len(alternativas) < 2:
             return "Múltipla escolha precisa de pelo menos duas alternativas, uma por linha."
@@ -118,8 +118,8 @@ def _campos_questao(prefixo, inicial):
         "Pontos (XP)", min_value=1, value=int(inicial.get("pontos", 10)), step=1, key=f"{prefixo}_pontos",
     ))
     descritores = campo_descritores(
-        "Descritores SAETO", valores_atuais=descritores_da_missao(inicial),
-        chave=f"{prefixo}_descritores", ajuda=AJUDA_DESCRITORES,
+        "Descritor SAETO", valores_atuais=descritores_da_missao(inicial),
+        chave=f"{prefixo}_descritores", ajuda=AJUDA_DESCRITORES, maximo=1,
     )
     questao = {
         "titulo": titulo.strip(), "pergunta": pergunta, "resposta": resposta.strip(),
@@ -147,7 +147,7 @@ def _anexar_imagem(questao, enviado):
 
 def _form_adicionar_questao():
     st.subheader("➕ Adicionar questão")
-    st.caption("Escolha a disciplina, escreva a questão e marque os descritores da habilidade que ela exige.")
+    st.caption("Escolha a disciplina, escreva a questão e escolha o descritor da habilidade que ela exige.")
     """
     A versão entra na chave de cada campo: ao gravar, ela sobe e os campos reaparecem vazios, sem
     mexer em st.session_state de widgets já instanciados (o que o Streamlit não permite).
