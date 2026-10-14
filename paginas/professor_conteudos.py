@@ -39,13 +39,16 @@ def _rotulo_disciplina(cid):
     return f"{c.get('icone', '')} {c.get('titulo', cid)}".strip()
 
 
-def _erro_questao(pergunta, resposta, tipo, alternativas):
+def _erro_questao(pergunta, resposta, tipo, alternativas, descritores):
     """Texto do problema que impede de gravar a questão; vazio se está válida.
 
     Validado no cadastro, e não na aula: uma múltipla escolha sem alternativas, ou cuja resposta
-    correta não esteja entre elas, seria impossível de acertar."""
+    correta não esteja entre elas, seria impossível de acertar. Sem descritor, a questão não entra
+    na tabela de acerto por habilidade."""
     if not (pergunta.strip() and resposta.strip()):
         return "Preencha o enunciado e a resposta correta."
+    if not descritores:
+        return "Marque pelo menos um descritor do SAETO."
     if tipo == "multipla":
         if len(alternativas) < 2:
             return "Múltipla escolha precisa de pelo menos duas alternativas, uma por linha."
@@ -115,7 +118,7 @@ def _campos_questao(prefixo, inicial):
         "Pontos (XP)", min_value=1, value=int(inicial.get("pontos", 10)), step=1, key=f"{prefixo}_pontos",
     ))
     descritores = campo_descritores(
-        "Descritores SAETO (opcional)", valores_atuais=descritores_da_missao(inicial),
+        "Descritores SAETO", valores_atuais=descritores_da_missao(inicial),
         chave=f"{prefixo}_descritores", ajuda=AJUDA_DESCRITORES,
     )
     questao = {
@@ -128,7 +131,7 @@ def _campos_questao(prefixo, inicial):
         questao["imagem"] = imagem_atual
     if legenda_imagem.strip() and (manter_imagem or enviado):
         questao["legenda_imagem"] = legenda_imagem.strip()
-    return questao, _erro_questao(pergunta, resposta, tipo, alternativas), enviado
+    return questao, _erro_questao(pergunta, resposta, tipo, alternativas, descritores), enviado
 
 
 def _anexar_imagem(questao, enviado):
